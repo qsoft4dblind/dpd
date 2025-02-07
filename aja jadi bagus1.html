@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download File Database DPD Pertuni Jambi</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script>
+        // Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+            authDomain: "dpd-pertuni.firebaseapp.com",
+            databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dpd-pertuni",
+            storageBucket: "dpd-pertuni.appspot.com",
+            messagingSenderId: "253614860627",
+            appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+            measurementId: "G-6J7XZB9R8K"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            color: #003366; /* Blue color for text */
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #003366;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            text-align: justify;
+        }
+
+        .back-button, button {
+            background-color: #003366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        .back-button:hover, button:hover {
+            background-color: #002244;
+        }
+
+        input[type="checkbox"] {
+            margin: 10px 0;
+        }
+
+        #fileOptions {
+            margin-bottom: 20px;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+        }
+
+        /* Custom style for checked checkbox text */
+        .checked-text {
+            color: #006400; /* Dark green */
+        }
+
+        .unchecked-text {
+            color: #003366; /* Dark blue */
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+
+            input[type="checkbox"], .back-button, button {
+                font-size: 1rem;
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            p {
+                font-size: 0.9rem;
+            }
+
+            .back-button, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Download File DPD Pertuni Jambi</h1>
+        <p>Silahkan Pilih format file yang ingin Anda unduh:</p>
+
+        <!-- Format options -->
+        <input type="checkbox" id="xlsxCheckbox" value="xlsx" onchange="updateDownloadLink()"> Excel (.xlsx)<br>
+        <input type="checkbox" id="pdfCheckbox" value="pdf" onchange="updateDownloadLink()"> PDF (.pdf)<br>
+        <input type="checkbox" id="csvCheckbox" value="csv" onchange="updateDownloadLink()"> CSV (.csv)<br>
+
+        <p>Silahkan Pilih file yang ingin Anda unduh:</p>
+
+        <!-- File options -->
+        <div id="fileOptions"></div>
+
+        <!-- Download button -->
+        <button onclick="downloadSpreadsheet()">Download</button>
+        <button class="back-button" onclick="window.location.href='admin dpc.html'">Kembali</button>
+
+        <!-- Hidden link element to dynamically update the download link -->
+        <a id="downloadLink" style="display: none;" href="" download=""></a>
+
+        <script>
+            // Initialize Firebase Authentication
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    var email = user.email;
+                    console.log("Logged in as:", email);
+                    setupFileOptions(email);
+                } else {
+                    console.log("No user is logged in");
+                    alert("You must be logged in to access this page.");
+                }
+            });
+
+function setupFileOptions(email) {
+        var fileOptionsDiv = document.getElementById("fileOptions");
+        var allFileOptions = [
+            {id: "batanghariCheckbox", value: "batanghari", name: "Download DPC Batanghari", emailList: ["batanghari@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1tD710WRXL-J8ueQImPC5RS3BYrQ5vWOfGEpnd35gbiI"},
+            {id: "kerinciCheckbox", value: "kerinci", name: "Download DPC Kerinci", emailList: ["kabkerinci@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1sKWPfS0zo6VRxs662BtXNT1WP1SAugDlOCdl27Y1weU"},
+            {id: "dpcJambiCheckbox", value: "jambi", name: "Download DPC Kota Jambi", emailList: ["kotajambi@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1aHIqAMknbefisMe678yf5nYRwk1L8pSDExT5guU_Ifk"},
+            {id: "sungaiPenuhCheckbox", value: "sungaipenuh", name: "Download DPC Kota Sungai Penuh", emailList: ["kotasungaipenuh@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1jAXCMmhxEoIOKB1oVreOiFLRziiEWoS0vC4CMpzeAUE"},
+            {id: "meranginCheckbox", value: "merangin", name: "Download DPC Merangin", emailList: ["merangin@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1rluQ-7q15JO5IX1GK6jVyDWctwS1M5lIaTb-RLg0BIk"},
+            {id: "bungoCheckbox", value: "bungo", name: "Download DPC Muaro Bungo", emailList: ["muarabungo@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1llqiEOkryl8h3pRbTNczHfdVeIydG8sIk1n8iYF4TUw"},
+            {id: "muaroJambiCheckbox", value: "muarojambi", name: "Download DPC Muaro Jambi", emailList: ["muarojambi@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1QwFg2-MKcVVHOURrq894vwSqxha3dJ7qyrOR0ORwpHQ"},
+            {id: "sarolangunCheckbox", value: "sarolangun", name: "Download DPC Sarolangun", emailList: ["sarolangun@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1M4AB2sHc2wON5V7VdwH1hyhw9KRoYsF7skgPyjt7Fwk"},
+            {id: "tanjabBaratCheckbox", value: "tanjabbarat", name: "Download DPC Tanjung Jabung Barat", emailList: ["tanjabbarat@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1pcY12_5vR5NkAl5OA-Rk14X_8qUSBTospU3Ew7Ii7_g"},
+            {id: "tanjabTimurCheckbox", value: "tanjabtimur", name: "Download DPC Tanjung Jabung Timur", emailList: ["tanjabtimur@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1XSsrV6Sep8uP26VAxjz4PxQwvBYSP-DG5i66d0N-rLc"},
+            {id: "teboCheckbox", value: "tebo", name: "Download DPC Tebo", emailList: ["kabtebo@pertuni.or.id", "Jambi@pertuni.or.id"], fileId: "1r_Y_-jguHCTKpszcPu9DY9OJgcYDmZMXSroMK4IDaLw"}
+        ];
+
+        // If email is 'jambi@pertuni.or.id', show all options
+        if (email.toLowerCase() === "jambi@pertuni.or.id") {
+            allFileOptions.forEach(function(option) {
+                var checkboxHTML = `<input type="checkbox" id="${option.id}" value="${option.value}" data-file-id="${option.fileId}" onchange="updateDownloadLink()"> ${option.name}<br>`;
+                fileOptionsDiv.innerHTML += checkboxHTML;
+            });
+        } else {
+            // Otherwise, show only the options that match the email
+            allFileOptions.forEach(function(option) {
+                if (option.emailList.includes(email)) {
+                    var checkboxHTML = `<input type="checkbox" id="${option.id}" value="${option.value}" data-file-id="${option.fileId}" onchange="updateDownloadLink()"> ${option.name}<br>`;
+                    fileOptionsDiv.innerHTML += checkboxHTML;
+                }
+            });
+        }
+    }
+
+            function updateDownloadLink() {
+                var selectedFormats = [];
+                if (document.getElementById("xlsxCheckbox").checked) {
+                    selectedFormats.push("xlsx");
+                }
+                if (document.getElementById("pdfCheckbox").checked) {
+                    selectedFormats.push("pdf");
+                }
+                if (document.getElementById("csvCheckbox").checked) {
+                    selectedFormats.push("csv");
+                }
+
+                var downloadLink = document.getElementById("downloadLink");
+                var selectedFile = document.querySelector('input[type="checkbox"]:checked[data-file-id]');
+                
+                if (selectedFile && selectedFormats.length > 0) {
+                    var fileId = selectedFile.getAttribute('data-file-id');
+                    var format = selectedFormats[0]; // Pick the first selected format
+                    var formattedUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=${format}`;
+                    downloadLink.href = formattedUrl;
+                    downloadLink.download = `file_download.${format}`; // Filename based on format
+                } else {
+                    downloadLink.href = "";
+                    downloadLink.download = "";
+                }
+            }
+
+            function downloadSpreadsheet() {
+                var downloadLink = document.getElementById("downloadLink");
+                if (downloadLink.href !== "") {
+                    downloadLink.click();
+                } else {
+                    alert("Pilih setidaknya satu format file dan satu file untuk diunduh.");
+                }
+            }
+        </script>
+    </header>
+</body>
+</html>

@@ -1,0 +1,120 @@
+/* Global styling */
+body {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px; /* Set ukuran teks menjadi 14 */
+  line-height: 1.6;
+  background-color: #f4f4f4;
+  padding: 20px;
+  margin: 0; /* Reset margin to ensure full width */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+}
+
+/* Styling for h1 */
+h1 {
+  font-weight: bold; /* Membuat teks h1 menjadi tebal (bold) */
+  color: white; /* Warna teks putih */
+  background-color: black; /* Warna latar belakang hitam */
+  padding: 10px; /* Tambahkan padding agar teks tidak terlalu dekat dengan latar belakang */
+}
+
+/* Styling for the menu items */
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: row; /* Ubah flex-direction menjadi row */
+}
+
+nav li {
+  /* float: left; */
+  /* Menghapus float: left; */
+}
+
+nav button {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Styling for the active menu item */
+.active {
+  background-color: blue;
+}
+
+/* Container styling */
+.container {
+  max-width: 800px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow-y: scroll; /* Allow vertical scroll */
+  flex: 1; /* Grow container to fill remaining space */
+}
+
+/* Responsive image */
+.img-center {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 20px; /* Add some space below the image */
+}
+
+/* Gaya dasar untuk semua teks */
+* {
+  color: black; /* Warna teks hitam secara default */
+}
+
+/* Efek hover untuk semua teks */
+*:hover {
+  color: lightblue; /* Warna teks biru muda saat hover */
+}
+
+/* Gaya dasar untuk kalimat di luar heading */
+p {
+  text-align: center; /* Rata tengah */
+  font-size: 16px; /* Ukuran font */
+  margin: 10px 0; /* Penyesuaian margin */
+}
+
+/* Gaya untuk tombol */
+button {
+  background-color: blue; /* Warna latar biru tua */
+  color: white; /* Warna teks putih */
+  padding: 10px 20px; /* Padding tombol */
+  border: none; /* Hilangkan border */
+  cursor: pointer; /* Kursor jadi tanda tangan saat mengarahkan ke tombol */
+}
+
+button:hover {
+  background-color: lightblue; /* Warna latar biru muda saat hover */
+}
+
+/* Gaya untuk teks pada tombol */
+button span {
+  color: black; /* Warna teks hitam secara default */
+}
+
+button:hover span {
+  color: lightblue; /* Warna teks biru muda saat hover */
+}
+
+/* Gaya untuk gambar */
+.img-center {
+  position: absolute; /* Position absolute untuk menempatkan gambar secara bebas */
+  top: 50%; /* Posisi atas setengah dari viewport */
+  left: 50%; /* Posisi kiri setengah dari viewport */
+  transform: translate(-50%, -50%); /* Mentransformasikan posisi ke tengah */
+}

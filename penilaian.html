@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penilaian Layanan Produk</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            color: #003366; /* Warna Biru Tua */
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            font-size: 2em;
+        }
+
+        h1 {
+            color: #003366;
+        }
+
+        /* Rating Section */
+        .rating {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .rating label {
+            margin: 0 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .button {
+            background-color: #003366;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            background-color: #00509E;
+        }
+
+        .data-container {
+            margin-top: 20px;
+        }
+
+        .data-box {
+            padding: 10px;
+            border: 1px solid #003366;
+            margin-bottom: 10px;
+            background-color: #f4f4f4;
+        }
+
+        .data-box p {
+            margin: 5px 0;
+        }
+
+        .delete {
+            color: red;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .comment {
+            padding: 10px;
+            border: 1px solid #003366;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .delete {
+            color: red;
+            cursor: pointer;
+        }
+
+        .back-button {
+            background-color: #003366;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .back-button:hover {
+            background-color: #00509E;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .rating label {
+                font-size: 1em;
+                margin: 10px;
+            }
+
+            h1, h2 {
+                font-size: 1.5em;
+            }
+
+            .button {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+
+            .data-box {
+                font-size: 0.9em;
+            }
+
+            .back-button {
+                font-size: 0.9em;
+                padding: 8px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1, h2 {
+                font-size: 1.2em;
+            }
+
+            /* Tambahkan kelas tersembunyi untuk menyembunyikan elemen */
+.hidden {
+    display: none;
+}
+
+            .rating {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .rating label {
+                font-size: 1em;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Penilaian Layanan Produk</h1>
+    
+    <div class="rating">
+        <label><input type="radio" name="rating" value="1"> Garing Abiz (1)</label>
+        <label><input type="radio" name="rating" value="2"> B aja / Biasa aja (2)</label>
+        <label><input type="radio" name="rating" value="3"> Mantul / Mantap Betul (3)</label>
+        <label><input type="radio" name="rating" value="4"> Gokil Parah (4)</label>
+        <label><input type="radio" name="rating" value="5"> Super Sekali (5)</label>
+    </div>
+
+    <button class="button" id="submitRating" disabled>Kirim Penilaian</button>
+
+    <p>Total Penilaian: <span id="averageRating">0</span></p>
+    <p>Total Input: <span id="totalUsers">0</span></p>
+
+    <button class="button hidden" id="viewData">Lihat Data</button>
+
+    <div id="userDataContainer" class="data-container" style="display:none;">
+        <!-- Data pengguna akan ditampilkan di sini dalam bentuk div -->
+    </div>
+
+    <button id="btnTulisKomentar" class="button">Buat Pesan</button>
+    <div id="formKomentar" class="hidden">
+        <textarea id="komentarText" placeholder="Tulis komentar anda..."></textarea>
+        <button id="btnKirim" class="button">Kirim</button>
+    </div>
+    
+    <h2>Hasil Pesan</h2>
+    <div id="hasilKomentar"></div>
+</div>
+
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+    // Inisialisasi Firebase
+    var firebaseConfig = {
+        apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+        authDomain: "dpd-pertuni.firebaseapp.com",
+        databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "dpd-pertuni",
+        storageBucket: "dpd-pertuni.appspot.com",
+        messagingSenderId: "253614860627",
+        appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+        measurementId: "G-6J7XZB9R8K"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+    var auth = firebase.auth();
+
+    // Get elements
+    var submitButton = document.getElementById('submitRating');
+    var viewDataButton = document.getElementById('viewData');
+    var averageRatingSpan = document.getElementById('averageRating');
+    var totalUsersSpan = document.getElementById('totalUsers');
+    var userDataContainer = document.getElementById('userDataContainer');
+    var btnTulisKomentar = document.getElementById("btnTulisKomentar");
+    var formKomentar = document.getElementById("formKomentar");
+    var btnKirim = document.getElementById("btnKirim");
+    var komentarText = document.getElementById("komentarText");
+    var hasilKomentar = document.getElementById("hasilKomentar");
+
+    // Listen for rating selection
+    document.querySelectorAll('input[name="rating"]').forEach(function(input) {
+        input.addEventListener('change', function() {
+            submitButton.disabled = false;
+        });
+    });
+
+    // Fungsi untuk menghitung dan menampilkan total penilaian dan total input
+    function updateRatingStats() {
+        database.ref('pertuni/perpustakaan/penilaian/produk').on('value', function(snapshot) {
+            var totalUsers = snapshot.numChildren();
+            var totalPoints = 0;
+
+            snapshot.forEach(function(childSnapshot) {
+                totalPoints += parseInt(childSnapshot.val().point);
+            });
+
+            var averageRating = (totalPoints / totalUsers).toFixed(2);
+            averageRatingSpan.textContent = averageRating;
+            totalUsersSpan.textContent = totalUsers;
+        });
+    }
+
+    // Update stats saat halaman dimuat
+    window.onload = function() {
+    auth.onAuthStateChanged(function(user) {
+        if (user) {
+            // Mengecek apakah email pengguna adalah 'pertunijambi21@gmail.com'
+            if (user.email === 'dwitra.training@gmail.com') {
+                viewDataButton.classList.remove('hidden'); // Tampilkan tombol jika email sesuai
+            } else {
+                viewDataButton.classList.add('hidden'); // Sembunyikan tombol jika email berbeda
+            }
+                updateRatingStats();  // Update statistik saat halaman dimuat
+                tampilkanKomentar();  // Update komentar saat login
+            } else {
+                alert("Anda belum login. Silakan login untuk melihat dan mengirim komentar.");
+            }
+        });
+    };
+
+    // Fungsi untuk mengirimkan penilaian
+    submitButton.addEventListener('click', function() {
+        getUserData(function(user) {
+            var selectedRating = document.querySelector('input[name="rating"]:checked').value;
+            var timestamp = new Date().toLocaleString();
+
+            // Simpan penilaian ke Firebase
+            database.ref('pertuni/perpustakaan/penilaian/produk').push({
+                nama: user.nama,
+                nomor_telepon: user.nomor_telepon,
+                email: user.email,
+                point: selectedRating,
+                waktu: timestamp
+            });
+
+            // Update total dan rata-rata penilaian setelah data dikirim
+            updateRatingStats();  // Memperbarui statistik setelah pengiriman
+
+            alert('Penilaian terkirim!');
+            submitButton.disabled = true;
+        });
+    });
+
+    // Fungsi untuk mengambil data pengguna
+    function getUserData(callback) {
+        var user = auth.currentUser;
+        if (user) {
+            var email = user.email;
+            database.ref('pertuni/perpustakaan/pengguna').orderByChild('email').equalTo(email).once('value', function(snapshot) {
+                if (snapshot.exists()) {
+                    snapshot.forEach(function(childSnapshot) {
+                        var data = childSnapshot.val();
+                        callback({
+                            nama: data.nama,
+                            nomor_telepon: data.nomor_telepon,
+                            email: data.email
+                        });
+                    });
+                }
+            });
+        }
+    }
+
+    // Tombol lihat data
+    viewDataButton.addEventListener('click', function() {
+        userDataContainer.style.display = 'block';
+        userDataContainer.innerHTML = ''; // Kosongkan kontainer
+
+        database.ref('pertuni/perpustakaan/penilaian/produk').once('value', function(snapshot) {
+            var no = 1;
+            snapshot.forEach(function(childSnapshot) {
+                var data = childSnapshot.val();
+                var dataDiv = `
+                    <div class="data-box">
+                        <p>No: ${no}</p>
+                        <p>Waktu Pengiriman: ${data.waktu}</p>
+                        <p>Nama: ${data.nama}</p>
+                        <p>Nomor Telepon: ${data.nomor_telepon}</p>
+                        <p>Email: ${data.email}</p>
+                        <p>Point: ${data.point}</p>
+                        <button class="button red" onclick="deleteData('${childSnapshot.key}')">Hapus</button>
+                    </div>
+                `;
+                userDataContainer.insertAdjacentHTML('beforeend', dataDiv);
+                no++;
+            });
+        });
+    });
+
+    // Fungsi untuk menghapus data penilaian
+    function deleteData(key) {
+        if (confirm('Apakah Anda ingin menghapus data ini?')) {
+            database.ref('pertuni/perpustakaan/penilaian/produk/' + key).remove()
+                .then(function() {
+                    alert('Data berhasil dihapus');
+                    location.reload(); // Muat ulang halaman untuk memperbarui tampilan
+                })
+                .catch(function(error) {
+                    alert('Terjadi kesalahan saat menghapus data: ' + error.message);
+                });
+        }
+    }
+
+    // Menampilkan komentar
+    btnTulisKomentar.addEventListener("click", function() {
+        formKomentar.classList.toggle("hidden");
+    });
+
+    btnKirim.addEventListener("click", function() {
+        var komentar = komentarText.value.trim();
+        if (komentar) {
+            getUserData(function(user) {
+                var komentarData = {
+                    waktu: new Date().toISOString(),
+                    nama: user.nama,
+                    nomor_telepon: user.nomor_telepon,
+                    email: user.email,
+                    komentar: komentar
+                };
+
+                // Menyimpan komentar ke Firebase
+                var komentarRef = database.ref('pertuni/perpustakaan/karya/penilaian');
+                komentarRef.push(komentarData).then(function() {
+                    komentarText.value = ""; // Bersihkan kolom komentar
+                    tampilkanKomentar(); // Update tampilan komentar
+                });
+            });
+        }
+    });
+
+    // Menampilkan komentar
+    function tampilkanKomentar() {
+        var komentarRef = database.ref('pertuni/perpustakaan/karya/penilaian');
+        komentarRef.once('value').then(function(snapshot) {
+            hasilKomentar.innerHTML = ""; // Bersihkan komentar lama
+            snapshot.forEach(function(childSnapshot) {
+                var data = childSnapshot.val();
+                var divKomentar = document.createElement("div");
+                divKomentar.classList.add("comment");
+
+                // Mengubah newline menjadi <br> dan URL menjadi link
+                var content = `
+                    <strong>Waktu Pengiriman:</strong> ${new Date(data.waktu).toLocaleString()}<br>
+                    <strong>Nama:</strong> ${data.nama}<br>
+                    ${data.komentar ? `<p>Komentar: ${data.komentar.replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</p>` : ''}
+                    <span class="delete" onclick="hapusKomentar('${childSnapshot.key}')">Hapus</span>
+                `;
+                divKomentar.innerHTML = content;
+                
+                // Menambahkan komentar di bagian atas
+                hasilKomentar.prepend(divKomentar);
+            });
+        });
+    }
+
+    // Menghapus komentar dengan konfirmasi
+    function hapusKomentar(key) {
+        var user = auth.currentUser;
+        if (user) {
+            var userEmail = user.email;
+            if (userEmail === 'pertunijambi21@gmail.com' || userEmail === user.email) {
+                if (confirm("Apakah Anda ingin menghapus data ini?")) {
+                    var komentarRef = database.ref('pertuni/perpustakaan/karya/penilaian/' + key);
+                    komentarRef.remove().then(function() {
+                        tampilkanKomentar(); // Update tampilan komentar
+                    });
+                }
+            } else {
+                alert("Anda tidak memiliki izin untuk menghapus komentar.");
+            }
+        }
+    }
+</script>
+<button class="back-button" onclick="window.location.href='member perwira.html'">Kembali</button>
+
+</body>
+</html>

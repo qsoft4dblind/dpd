@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 50px;
+    }
+    
+    #score {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+
+    button {
+      font-size: 16px;
+      margin: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+  <title>Aplikasi Tasbih Dwitra</title>
+</head>
+<body>
+  <img class="img-center" src="logo dwitra.jpg" alt="Logo Dwitra"> <!-- Remove width attribute to allow automatic resizing -->
+  <header>
+
+  <h1>Tasbih Dwitra</h1>
+<p>Silahkan klik tombol dzikir untuk memulai</p><p></p></p>
+  <button id="dzikirButton" onclick="tambahSkor()">Dzikir</button>
+  
+  <div id="score">Skor: <span id="skorValue">0</span></div>
+  <button id="resetButton" onclick="resetSkor()">Reset</button>
+<br>
+<button class="back-button" onclick="window.location.href='sosialtatatertib.html'">Kembali</button>  
+  <script>
+    // Inisialisasi skor
+    let skor = 0;
+    
+    // Fungsi untuk menambah skor
+    function tambahSkor() {
+      skor++;
+      updateSkor();
+    }
+
+    // Fungsi untuk mereset skor
+    function resetSkor() {
+      skor = 0;
+      updateSkor();
+    }
+
+    // Fungsi untuk memperbarui tampilan skor
+    function updateSkor() {
+      document.getElementById('skorValue').innerText = skor;
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base target="_top">
+    <title>Aplikasi Pertuni Wirausaha</title>
+    <style>
+        /* Global styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f4f4f4;
+        }
+
+        .img-center {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Container for content */
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Styling for the buttons */
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .back-button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            width: 100%;
+            max-width: 250px;
+            display: block;
+            margin-top: 20px;
+        }
+
+        .back-button:hover {
+            background-color: #e32a1e;
+        }
+
+        /* Styling for pagination */
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .pagination button:disabled {
+            background-color: #ccc;
+        }
+
+        .pagination span {
+            font-size: 16px;
+        }
+
+        /* Display data section */
+        #displayData {
+            margin-top: 20px;
+        }
+
+        #displayData div {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #displayData p {
+            margin: 5px 0;
+        }
+
+        .data-section {
+            margin-top: 20px;
+        }
+
+        /* Responsive Styles for Mobile */
+        @media (max-width: 768px) {
+            button, .back-button {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .pagination {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .pagination button {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .content {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            #displayData div {
+                padding: 15px;
+            }
+
+            .img-center {
+                width: 90%;
+            }
+
+            input[type="text"] {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            button, .back-button {
+                font-size: 14px;
+            }
+
+            .pagination button {
+                font-size: 14px;
+            }
+
+            .pagination span {
+                font-size: 14px;
+            }
+
+            .img-center {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <img class="img-center" src="asset/pertuni.jpg" alt="Logo Pertuni Wirausaha">
+        <header>
+            <h1>Aplikasi Pertuni Wirausaha</h1>
+
+            <button id="deleteAllButton" onclick="deleteAllOrders()">Hapus Semua Pesanan</button>
+            <div>Email Pengguna: <span id="userEmail"></span></div>
+            <!-- Display Total Price -->
+            <div>
+                <p>Total Keseluruhan Harga: <span id="totalPrice">Rp 0</span></p>
+            </div>
+
+            <!-- Tombol Kembali -->
+            <button class="back-button" onclick="window.location.href='admin aja.html'">Kembali</button>
+
+            <!-- Pagination navigation buttons -->
+            <div class="pagination">
+                <button id="prevButton" onclick="changePage(-1)" disabled>Sebelumnya</button>
+                <button id="nextButton" onclick="changePage(1)" disabled>Selanjutnya</button>
+                <span id="dataCount">Halaman 1 dari 1</span>            
+            </div>
+
+            <!-- Kotak Pencarian -->
+            <div>
+                <input type="text" id="searchInput" placeholder="Cari nama...">
+                <button onclick="searchByName()">Cari</button>
+            </div>
+
+            <!-- Display Data with pagination -->
+            <div id="displayData"></div>
+        </header>
+    </div>
+
+    <!-- Firebase and script for data handling -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        
+            // Inisialisasi Firebase
+            const database = firebase.database();
+            const ordersRef = database.ref('pertuni/perpustakaan/data/orders');
+
+            // Fungsi untuk mencari data berdasarkan nama
+            function searchByName() {
+                const searchValue = document.getElementById('searchInput').value.toLowerCase();
+                const filteredData = snapshotArray.filter(data => data.nama && data.nama.toLowerCase().includes(searchValue));
+                renderPageData(filteredData);
+            }
+
+            // Variabel global untuk pagination
+            let currentPage = 1;
+            const itemsPerPage = 1; // Jumlah data per halaman
+            let totalItems = 0;
+            let snapshotArray = [];
+
+            // Fungsi format waktu
+            function formatIndojakartaTime(time) {
+                return new Intl.DateTimeFormat('en-ID', {
+                    timeZone: 'Asia/Jakarta',
+                    dateStyle: 'medium',
+                    timeStyle: 'medium'
+                }).format(new Date(time));
+            }
+
+            // Fungsi untuk mengonfirmasi penghapusan data
+            function confirmDelete(key) {
+                var result = confirm("Apakah Anda ingin menghapus data ini?");
+                if (result) {
+                    ordersRef.child(key).remove();
+                    document.getElementById(key).remove();
+                }
+            }
+
+            // Fungsi untuk menghapus semua pesanan
+            function deleteAllOrders() {
+                if (firebase.auth().currentUser.email === 'pertunijambi21@gmail.com') {
+                    var result = confirm("Apakah Anda yakin ingin menghapus semua pesanan?");
+                    if (result) {
+                        ordersRef.remove();
+                        document.getElementById('displayData').innerHTML = '';
+                    }
+                } else {
+                    alert('Anda tidak memiliki izin untuk menghapus semua data.');
+                }
+            }
+            // Fungsi untuk menghitung total harga dari data yang sudah bayar
+            function calculateTotalPrice() {
+                let totalPrice = 0;
+
+                // Filter data berdasarkan "Sudah Bayar"
+                snapshotArray.forEach(function(data) {
+                    if (data.keterangan === 'Sudah Bayar') {
+                        // Tambahkan harga ke total
+                        totalPrice += parseInt(data.totalPrice.replace(/[^\d]/g, ''), 10);
+                    }
+                });
+
+                // Format totalPrice dengan tanda titik untuk ribuan
+                totalPrice = totalPrice.toLocaleString('id-ID');
+
+                // Tampilkan total harga di atas tombol Kembali
+                document.getElementById('totalPrice').innerText = 'Rp ' + totalPrice;
+            }
+
+            // Fungsi untuk merender data sesuai halaman saat ini
+            function renderPageData(dataArray) {
+                const displayData = document.getElementById('displayData');
+                displayData.innerHTML = ''; // Bersihkan data sebelumnya
+
+                // Hitung indeks awal dan akhir untuk data yang ditampilkan
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, dataArray.length);
+
+                // Tampilkan data untuk halaman saat ini
+                for (let i = startIndex; i < endIndex; i++) {
+                    const data = dataArray[i];
+                    const key = data.key;
+                    const orderDiv = document.createElement('div');
+                    orderDiv.id = key;
+
+                    // Tambahkan nomor urut
+                    const nomorUrut = i + 1;
+                    orderDiv.innerHTML += '<p>Nomor: ' + nomorUrut + '</p>';
+        // Pindahkan checkbox "Sudah Bayar" dan "Status Keterangan" ke atas Nama
+        orderDiv.innerHTML += '<div><label for="sudahBayar' + key + '">Sudah Bayar:</label>';
+        orderDiv.innerHTML += '<input type="checkbox" id="sudahBayar' + key + '" ' + (data.keterangan === 'Sudah Bayar' ? 'checked' : '') + ' onclick="updateKeterangan(\'' + key + '\')"></div>';
+        orderDiv.innerHTML += '<p>Status Keterangan: <span id="statusKeterangan' + key + '">' + (data.keterangan || 'Belum Bayar') + '</span></p>';
+
+                    // Konten data yang akan ditampilkan
+                    orderDiv.innerHTML += '<p>Waktu Pengiriman Formulir: ' + formatIndojakartaTime(data.deliveryTime) + '</p>';
+                    orderDiv.innerHTML += '<p>Nama: ' + data.nama + '</p>';
+                    orderDiv.innerHTML += '<p>Alamat: ' + data.alamat + '</p>';
+                    orderDiv.innerHTML += '<span>Nomor Telepon: <a href="tel:' + data.nomor_telepon + '">' + data.nomor_telepon + '</a></span>';
+                    orderDiv.innerHTML += '<span>Email: <a href="mailto:' + data.email + '">' + data.email + '</a></span>';
+                    orderDiv.innerHTML += '<p>Catatan: ' + data.notes + '</p>';
+                    orderDiv.innerHTML += '<p>Nama Produk: ' + data.productName + '</p>';
+                    orderDiv.innerHTML += '<p>Kode Produk: ' + data.productCode + '</p>';
+                    if (data.productColor) {
+    orderDiv.innerHTML += '<p>Warna Produk: ' + data.productColor + '</p>';
+}
+if (data.spicinessLevel) {
+    orderDiv.innerHTML += '<p>Rasa: ' + data.spicinessLevel + '</p>';
+}
+                    orderDiv.innerHTML += '<p>Jumlah Pesanan: ' + data.quantity + '</p>';
+                    orderDiv.innerHTML += '<p>Total Harga: ' + data.totalPrice + '</p>';
+                    if (data.fileURL) {
+    orderDiv.innerHTML += '<p>URL Bukti Transfer: <a href="' + data.fileURL + '" target="_blank">' + data.fileURL + '</a></p>';
+}
+if (data.selectedImageURL) {
+    orderDiv.innerHTML += '<p>Gambar Produk: <a href="' + data.selectedImageURL + '" target="_blank">' + data.selectedImageURL + '</a></p>';
+}
+
+                    // Tombol hapus
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Hapus';
+                    deleteButton.onclick = function () {
+                        confirmDelete(key);
+                    };
+                    orderDiv.appendChild(deleteButton);
+                    displayData.appendChild(orderDiv);
+                }
+
+                // Tampilkan jumlah data
+                document.getElementById('dataCount').innerText = `Halaman ${currentPage} dari ${Math.ceil(totalItems / itemsPerPage)}`;
+                updateNavigationButtons(); // Perbarui status tombol navigasi
+
+                // Update total price when page data is rendered
+                calculateTotalPrice();
+            }
+            
+            // Fungsi untuk mengupdate keterangan di Firebase
+            function updateKeterangan(orderKey) {
+                const isChecked = document.getElementById('sudahBayar' + orderKey).checked;
+                const keterangan = isChecked ? 'Sudah Bayar' : 'Belum Bayar';
+
+                // Update status keterangan di Firebase
+                ordersRef.child(orderKey).update({
+                    keterangan: keterangan
+                });
+
+                // Update tampilan keterangan di halaman
+                document.getElementById('statusKeterangan' + orderKey).innerText = keterangan;
+            }
+
+            // Fungsi untuk navigasi halaman
+            function changePage(delta) {
+                currentPage += delta;
+                renderPageData(snapshotArray);
+            }
+
+            // Fungsi untuk mengatur status tombol navigasi
+            function updateNavigationButtons() {
+                document.getElementById('prevButton').disabled = currentPage === 1;
+                document.getElementById('nextButton').disabled = currentPage === Math.ceil(totalItems / itemsPerPage);
+            }
+
+            // Attach asynchronous callback untuk membaca data
+            ordersRef.on('value', function (snapshot) {
+                snapshotArray = []; // Reset array data
+                snapshot.forEach(function (childSnapshot) {
+                    const data = childSnapshot.val();
+                    data.key = childSnapshot.key; // Store the key to later remove or update specific orders
+                    snapshotArray.push(data);
+                });
+
+                totalItems = snapshotArray.length; // Update the total number of items
+                renderPageData(snapshotArray); // Render the first page of data
+            });
+
+            // Initial load: Display the total number of items and initialize the page
+            window.onload = function() {
+                // Fetch the user's email from Firebase Authentication and display it
+                firebase.auth().onAuthStateChanged(function(user) {
+                    if (user) {
+                        document.getElementById('userEmail').innerText = user.email;
+                    } else {
+                        // If no user is logged in, show a prompt or message
+                        document.getElementById('userEmail').innerText = 'Tidak ada pengguna yang masuk.';
+                    }
+                });
+            };
+        </script>
+
+        <style>
+            /* Styling for the form and table displaying order data */
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+
+            .img-center {
+                display: block;
+                margin: 0 auto;
+            }
+
+            h1 {
+                text-align: center;
+            }
+
+            #displayData {
+                margin-top: 20px;
+            }
+
+            #displayData div {
+                border: 1px solid #ddd;
+                padding: 10px;
+                margin: 10px 0;
+            }
+
+            #displayData p {
+                margin: 5px 0;
+            }
+
+            button {
+                padding: 8px 16px;
+                margin: 10px 0;
+                cursor: pointer;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+            }
+
+            button:hover {
+                background-color: #45a049;
+            }
+
+            input[type="text"] {
+                padding: 8px;
+                width: 200px;
+                margin: 10px 0;
+            }
+
+            .back-button {
+                background-color: #f44336;
+                color: white;
+                padding: 10px 15px;
+                margin-top: 10px;
+                text-decoration: none;
+            }
+
+            .back-button:hover {
+                background-color: #e32a1e;
+            }
+
+            /* Styling for navigation buttons */
+            .pagination {
+                margin-top: 20px;
+                display: flex;
+                justify-content: space-between;
+                padding-top: 10px;            
+            }
+
+            .pagination button {
+                background-color: #007BFF;
+                color: white;
+                padding: 10px;
+                border: none;
+                cursor: pointer;
+            }
+
+            .pagination button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            .back-button {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 15px;
+    margin-top: 20px;  /* Jarak dari atas */
+    margin-bottom: 20px;  /* Jarak bawah agar tombol navigasi tidak terlalu dekat */
+    text-decoration: none;
+}
+
+.back-button:hover {
+    background-color: #e32a1e;
+}
+
+        </style>
+
+        </div>
+
+</body>
+</html>

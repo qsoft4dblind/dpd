@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #FFFFFF; /* Warna latar belakang putih */
+            color: #000080; /* Warna tulisan biru tua */
+        }
+/* Aturan untuk tampilan responsif */
+p {
+    white-space: pre-wrap; /* Agar teks turun ke bawah saat ada 'enter' */
+    word-wrap: break-word; /* Memastikan kata tidak terpotong di layar kecil */
+}
+
+        h2, h3 {
+            text-align: center;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        label, input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .data-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .play-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .play-btn:hover {
+            background-color: #45a049;
+        }
+
+        .delete-btn {
+            background-color: red;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+
+        /* Responsive styling */
+        @media screen and (max-width: 768px) {
+            body {
+                font-size: 16px;
+                line-height: 1.5;
+                margin: 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            button, label, input, textarea, select {
+                font-size: 14px;
+            }
+
+            .data-item {
+                margin-bottom: 15px;
+            }
+
+            .play-btn, .delete-btn {
+                width: 100%;
+            }
+
+            h2, h3 {
+                font-size: 18px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            button {
+                font-size: 14px;
+                padding: 8px;
+                line-height: 1.4;
+            }
+
+            label, input, textarea, select {
+                font-size: 14px;
+            }
+
+            .play-btn, .delete-btn {
+                padding: 8px;
+            }
+        }
+    </style>
+    </head>
+<body>
+
+<h2>Karya Anggota Pertuni Jambi</h2>
+
+<!-- Button to create karya -->
+<button id="buat-karya-btn">Buat Karya</button>
+
+<!-- Dropdown for selecting type -->
+<label for="type" id="select-type-label" class="hidden">Pilih Opsi:</label>
+<select id="type" class="hidden">
+    <option value="artikel">Artikel</option>
+    <option value="lampiran">Lampiran</option>
+</select>
+
+<!-- Form Artikel -->
+<div id="form-artikel" class="hidden">
+    <label for="judul">Judul Artikel:</label>
+    <input type="text" id="judul" placeholder="Judul artikel">
+    
+    <label for="artikel">Isi Artikel:</label>
+    <textarea id="artikel" placeholder="Isi artikel"></textarea>
+</div>
+
+<!-- Form Lampiran -->
+<div id="form-lampiran" class="hidden">
+    <label for="lampiran">Pilih Lampiran:</label>
+    <input type="file" id="lampiran" accept=".mp3,.wav,.mp4">
+</div>
+
+<button id="submit" class="hidden">Kirim</button>
+
+<h3>Hasil Karya</h3>
+<div id="results"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+<script>
+    // Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+        authDomain: "dpd-pertuni.firebaseapp.com",
+        databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "dpd-pertuni",
+        storageBucket: "dpd-pertuni.appspot.com",
+        messagingSenderId: "253614860627",
+        appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+        measurementId: "G-6J7XZB9R8K"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
+    var storage = firebase.storage();
+
+    // Elements
+    const typeSelect = document.getElementById('type');
+    const formArtikel = document.getElementById('form-artikel');
+    const formLampiran = document.getElementById('form-lampiran');
+    const submitBtn = document.getElementById('submit');
+    const resultsDiv = document.getElementById('results');
+    const buatKaryaBtn = document.getElementById('buat-karya-btn');
+    const selectTypeLabel = document.getElementById('select-type-label');
+
+    // Show form options when "Buat Karya" button is clicked
+    buatKaryaBtn.addEventListener('click', function() {
+        selectTypeLabel.classList.remove('hidden');
+        typeSelect.classList.remove('hidden');
+        submitBtn.classList.remove('hidden');
+    });
+
+    // Toggle form display based on selection
+    typeSelect.addEventListener('change', function() {
+        if (typeSelect.value === 'artikel') {
+            formArtikel.classList.remove('hidden');
+            formLampiran.classList.add('hidden');
+        } else {
+            formArtikel.classList.add('hidden');
+            formLampiran.classList.remove('hidden');
+        }
+    });
+
+    // Get user data
+    let currentUser = null;
+    let nama = '';
+    let nomor_telepon = '';
+
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            currentUser = user;
+            fetchUserData(user.uid);  // Fetch user data on login
+        }
+    });
+
+    // Fetch user data
+    function fetchUserData(userId) {
+        db.ref(`pertuni/perpustakaan/pengguna/${userId}`).once('value').then((snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                nama = data.nama;
+                nomor_telepon = data.nomor_telepon;
+                console.log("User data fetched:", data);
+            }
+        });
+    }
+
+    // Submit button click
+    submitBtn.addEventListener('click', function() {
+        const selectedType = typeSelect.value;
+
+        if (selectedType === 'artikel') {
+            const judul = document.getElementById('judul').value;
+            const artikel = document.getElementById('artikel').value;
+            saveArticle(judul, artikel);
+        } else {
+            const file = document.getElementById('lampiran').files[0];
+            uploadAttachment(file);
+        }
+    });
+
+    // Save article to Firebase
+    function saveArticle(judul, artikel) {
+        // Function to convert URLs into clickable links
+        function convertUrlsToLinks(text) {
+            const urlPattern = /https?:\/\/[^\s]+/g;
+            return text.replace(urlPattern, (url) => {
+                return `<a href="${url}" target="_blank">${url}</a>`;
+            });
+        }
+
+        // Convert any URLs in the article text to clickable links
+        const articleWithLinks = convertUrlsToLinks(artikel);
+
+        const postData = {
+            waktu: new Date().toLocaleString(),
+            nama: nama,
+            nomorTelepon: nomor_telepon,
+            judul: judul,
+            artikel: articleWithLinks,
+            email: currentUser.email
+        };
+
+        const newPostKey = db.ref().child('pertuni/perpustakaan/karya/anggota').push().key;
+        db.ref(`pertuni/perpustakaan/karya/anggota/${newPostKey}`).set(postData)
+            .then(() => {
+                displayData(postData);
+                resetForm();  // Reset the form after submission
+            });
+    }
+
+    // Upload attachment to Firebase Storage
+    function uploadAttachment(file) {
+        const storageRef = storage.ref(`pertuni/perpustakaan/karya/anggota/${file.name}`);
+        const uploadTask = storageRef.put(file);
+
+        uploadTask.on('state_changed', function(snapshot) {
+            // Upload progress can be tracked here
+        }, function(error) {
+            console.error('Upload failed:', error);
+        }, function() {
+            uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                saveAttachment(downloadURL, file.name, file.type);
+            });
+        });
+    }
+
+    // Save attachment info to Firebase Database
+    function saveAttachment(downloadURL, fileName, fileType) {
+    const postData = {
+        waktu: new Date().toLocaleString(),
+        nama: nama,
+        nomorTelepon: nomor_telepon,
+        fileName: fileName,  // Nama file otomatis diambil
+        fileURL: downloadURL,
+        fileType: fileType,
+        email: currentUser.email
+    };
+
+    const newPostKey = db.ref().child('pertuni/perpustakaan/karya/anggota').push().key;
+    db.ref(`pertuni/perpustakaan/karya/anggota/${newPostKey}`).set(postData)
+        .then(() => {
+            displayData(postData);
+            resetForm();
+        });
+}
+
+// Display data result
+function displayData(data) {
+    const dataItem = document.createElement('div');
+    dataItem.classList.add('data-item');
+
+    const content = `
+        <p>Waktu pengiriman: ${data.waktu}</p>
+        <p>Nama: ${data.nama}</p>
+        <p>Nomor Telepon: ${data.nomorTelepon}</p>
+        ${data.judul ? `<p>Judul: ${data.judul}</p>` : ''}
+        ${data.artikel ? `<p>Artikel: ${data.artikel.replace(/\n/g, '<br>')}</p>` : ''}
+        ${data.fileName ? `<p>Nama File: ${data.fileName}</p>` : ''}
+        ${data.fileURL && data.fileType.startsWith('audio') ? ` 
+            <audio id="audio-${data.id}" src="${data.fileURL}" preload="auto"></audio>
+            <button class="play-btn">Putar</button>` : ''}
+        ${data.fileURL && data.fileType.startsWith('video') ? `
+            <video controls id="video-${data.id}" width="100%">
+                <source src="${data.fileURL}" type="${data.fileType}">
+                Your browser does not support the video tag.
+            </video>` : ''}
+        ${currentUser.email === 'pertunijambi21@gmail.com' || currentUser.email === data.email ? '<button class="delete-btn">Hapus</button>' : ''}
+    `;
+
+    dataItem.innerHTML = content;
+
+    // Logic for audio play/pause
+    const playBtn = dataItem.querySelector('.play-btn');
+    const audioElement = dataItem.querySelector('audio');
+    if (playBtn && audioElement) {
+        playBtn.addEventListener('click', function() {
+            if (playBtn.textContent === 'Putar') {
+                playBtn.textContent = 'Jeda';
+                audioElement.play();
+            } else {
+                playBtn.textContent = 'Putar';
+                audioElement.pause();
+            }
+        });
+    }
+
+    // Delete functionality
+    const deleteBtn = dataItem.querySelector('.delete-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            const confirmDelete = confirm("Apakah Anda ingin menghapus data ini?");
+            if (confirmDelete) {
+                // Use the correct id from data object
+                db.ref(`pertuni/perpustakaan/karya/anggota/${data.id}`).remove()
+                    .then(() => {
+                        dataItem.remove();  // Remove the item from the DOM
+                    }).catch((error) => {
+                        console.error("Error deleting item: ", error);
+                    });
+            }
+        });
+    }
+
+    resultsDiv.insertBefore(dataItem, resultsDiv.firstChild);
+}
+
+// Load all data on page load
+    window.onload = function() {
+        db.ref('pertuni/perpustakaan/karya/anggota').once('value').then((snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+                const data = childSnapshot.val();
+                data.id = childSnapshot.key;  // Store the key for deletion
+                displayData(data);
+            });
+        });
+    }
+
+    // Function to reset the form
+    function resetForm() {
+        document.getElementById('judul').value = '';
+        document.getElementById('artikel').value = '';
+        document.getElementById('lampiran').value = '';
+        typeSelect.value = 'artikel';  // Optionally reset to 'artikel'
+        formArtikel.classList.add('hidden');
+        formLampiran.classList.add('hidden');
+    }
+</script>
+<button class="back-button" onclick="window.location.href='karya komentar.html'">Kembali</button>
+
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" type="text/css" href="gaya tulisan.css">
+</head>
+<body>
+  <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni"> <!-- Remove width attribute to allow automatic resizing -->    
+  <h1>Data Bendahara DPD Pertuni Jambi</h1>
+
+  <div id="output"></div>
+
+  <div id="keterangan"></div>
+
+  <div id="detail"></div>
+
+  <!-- Jumlah -->
+  <div id="jumlah"></div>
+
+  <button onclick="previousData()">Sebelumnya</button>
+  <button onclick="nextData()">Selanjutnya</button>
+  <button class="back-button" onclick="window.location.href='admin bendahara.html'">Kembali</button>
+<br>  
+  <script>
+    var url = 'https://script.google.com/macros/s/AKfycbwxs9TYRLiLrayRZ_eODuA6e7etuNSaeqkDwD2dCjcBljepAHGyrrOrwFTXyL54e-G1AQ/exec';
+    var searchData = [];
+    var currentIndex = 0;
+    var data;
+    var sisaKas; // Variabel untuk menyimpan data sisa kas
+
+    function showData() {
+      var data = searchData[currentIndex];
+
+      if (data) {
+        document.getElementById('output').innerHTML = `
+        <p>Timestamp: ${data['timestamp']}</p>`;
+
+        // Periksa apakah terdapat data pemasukan dan tampilkan jika ada
+        if (data['pemasukan']) {
+          document.getElementById('output').innerHTML += `<p>Pemasukan: ${data['pemasukan']}</p>`;
+        } else {
+          // Sembunyikan menu pemasukan jika data kosong
+          document.getElementById('output').innerHTML += `<p style="display:none;">Pemasukan: </p>`;
+        }
+
+        // Periksa apakah terdapat data pengeluaran dan tampilkan jika ada
+        if (data['pengeluaran']) {
+          document.getElementById('output').innerHTML += `<p>Pengeluaran: ${data['pengeluaran']}</p>`;
+        } else {
+          // Sembunyikan menu pengeluaran jika data kosong
+          document.getElementById('output').innerHTML += `<p style="display:none;">Pengeluaran: </p>`;
+        }
+
+        document.getElementById('output').innerHTML += `
+        <p>Keterangan: ${data['keterangan']}</p>`;
+
+        // Menampilkan data sisa kas yang sudah diambil dari server
+        document.getElementById('output').innerHTML += `<p>Sisa Kas: ${sisaKas}</p>`;
+
+        if (data['Keterangan']) {
+          document.getElementById('keterangan').innerHTML = `<p>Keterangan: ${data['Keterangan']}</p>`;
+          document.getElementById('keterangan').style.display = 'block';
+        } else {
+          document.getElementById('keterangan').innerHTML = '';
+          document.getElementById('keterangan').style.display = 'none';
+        }
+
+        // Tampilkan jumlah dengan format yang benar
+        document.getElementById('jumlah').innerHTML = `Jumlah: ${currentIndex + 1} of ${searchData.length} pencarian yang ditemukan`;
+
+      } else {
+        document.getElementById('output').innerHTML = '';
+        document.getElementById('jumlah').innerHTML = 'Data tidak ditemukan';
+        document.getElementById('jumlah').innerHTML = '';
+      }
+
+      showDetail();
+    }
+
+    function showDetail() {
+      var data = searchData[currentIndex];
+      document.getElementById('detailKeterangan').innerHTML = data ? data['Keterangan'] : '';        
+      document.getElementById('detailsisaKas').innerHTML = sisaKas; // Menampilkan data sisa kas              
+      document.getElementById('detailtimestamp').innerHTML = data ? data['timestamp'] : '';        
+      document.getElementById('detailpemasukan').innerHTML = data ? data['pemasukan'] : '';      
+      document.getElementById('detailpengeluaran').innerHTML = data ? data['pengeluaran'] : '';            
+      document.getElementById('detailketerangan').innerHTML = data ? data['keterangan'] : '';      
+    }
+
+    function showAllData() {
+      searchData = data;
+      currentIndex = 0;
+      showData();
+    }
+
+    function previousData() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        showData();
+      }
+    }
+
+    function nextData() {
+      if (currentIndex < searchData.length - 1) {
+        currentIndex++;
+        showData();
+      }
+    }
+
+    function deleteData() {
+      // Hapus baris data yang sedang ditampilkan
+      if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+        searchData.splice(currentIndex, 1);
+        if (searchData.length === 0) {
+          // Jika tidak ada data tersisa setelah penghapusan, tampilkan pesan kosong
+          document.getElementById('output').innerHTML = '';
+          document.getElementById('jumlah').innerHTML = 'Data tidak ditemukan';
+        } else {
+          // Jika masih ada data tersisa, tampilkan data berikutnya
+          if (currentIndex >= searchData.length) {
+            currentIndex = searchData.length - 1;
+          }
+          showData();
+        }
+      }
+    }
+
+    fetch(url)
+      .then(response => response.json())
+      .then(dataResponse => {
+        data = dataResponse;
+        // Ambil data sisa kas dari server
+        sisaKas = data.pop().sisaKas;
+        // Semua data berhasil dimuat, tampilkan data pertama kali
+        showAllData();
+      })
+      .catch(error => console.error('Error:', error));
+  </script>
+</body>
+</html>

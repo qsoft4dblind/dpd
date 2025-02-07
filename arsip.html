@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base target="_top">
+    <title>Folder Arsip</title>
+    <link rel="stylesheet" type="text/css" href="../asset/gaya tulisan.css">
+</head>
+<body>
+    <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni">
+    <header>
+        <h1>Arsip</h1>
+
+        <!-- Formulir Input -->
+        <form id="orderForm" onsubmit="submitOrder(event)">
+            <textarea id="Deskripsi" placeholder="Deskripsi" required></textarea><br>
+            <input type="file" id="fileInput" required><br> <!-- Input untuk unggah file -->
+            <button type="submit">Kirim</button>
+        </form>
+
+        <button id="deleteAllButton" onclick="deleteAllOrders()">Hapus Semua Data</button>
+
+        <!-- Tampilkan alamat email pengguna -->
+        <div id="userEmail"></div>
+
+        <!-- Input nomor halaman dan tombol cari -->
+        <input type="number" id="pageNumberInput" placeholder="Nomor Halaman">
+        <button onclick="searchByPageNumber()">Cari</button>
+    </header>
+
+    <!-- Elemen untuk menampilkan informasi jumlah halaman -->
+    <div id="pageInfo"></div>
+
+    <!-- Elemen untuk menampilkan data -->
+    <div id="displayData"></div>
+    
+    <!-- Tombol navigasi halaman -->
+    <button id="previousButton" onclick="previousPage()">Sebelumnya</button>
+    <button id="nextButton" onclick="nextPage()">Selanjutnya</button>
+
+
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        // Get a reference to the database service
+        const database = firebase.database();
+        const ordersRef = database.ref('pertuni/perpustakaan/data/dpc');
+
+        // Format waktu ke zona waktu Jakarta
+        function formatIndojakartaTime(time) {
+            return new Intl.DateTimeFormat('id-ID', {
+                timeZone: 'Asia/Jakarta',
+                dateStyle: 'medium',
+                timeStyle: 'medium'
+            }).format(new Date(time));
+        }
+
+        // Variabel untuk pagination
+        let currentPage = 1;
+        const ordersPerPage = 10;
+
+        // Fungsi untuk menampilkan data dari database
+        function renderOrders(snapshot) {
+            const displayData = document.getElementById('displayData');
+            displayData.innerHTML = ""; // Bersihkan data yang ada sebelum menampilkan yang baru
+
+            let dataCount = 0;
+            const startIndex = (currentPage - 1) * ordersPerPage;
+
+            snapshot.forEach(function (childSnapshot) {
+                if (dataCount >= startIndex && dataCount < startIndex + ordersPerPage) {
+                    const data = childSnapshot.val();
+                    const key = childSnapshot.key;
+
+                    const orderDiv = document.createElement('div');
+                    orderDiv.id = key;
+
+                    orderDiv.innerHTML += '<p>Nomor: ' + (dataCount + 1) + '</p>';
+                    orderDiv.innerHTML += '<p>Waktu Pengiriman Formulir: ' + formatIndojakartaTime(data.deliveryTime) + '</p>';
+                    orderDiv.innerHTML += '<p>Nama File: ' + data.nama_file + '</p>';
+                    orderDiv.innerHTML += '<p>Deskripsi: ' + data.deskripsi + '</p>';
+
+                    // Menampilkan tombol untuk membuka file tanpa menampilkan URL
+                    const viewButton = document.createElement('button');
+                    viewButton.textContent = 'Baca File';
+                    viewButton.onclick = function() {
+                        window.open(data.fileURL, '_blank');
+                    };
+                    orderDiv.appendChild(viewButton);
+
+                    // Tombol untuk menghapus data
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Hapus';
+                    deleteButton.onclick = function () {
+                        confirmDelete(key);
+                    };
+                    orderDiv.appendChild(deleteButton);
+
+                    displayData.appendChild(orderDiv); // Tambahkan elemen baru ke dalam div displayData
+                }
+                dataCount++;
+            });
+
+            const totalPages = Math.ceil(dataCount / ordersPerPage);
+            renderPageControls(totalPages);
+        }
+
+        // Fungsi untuk mengatur tampilan halaman sesuai dengan pengaturan saat ini
+        function renderPageControls(totalPages) {
+            document.getElementById('pageInfo').innerHTML = "Halaman " + currentPage + " dari " + totalPages;
+
+            document.getElementById('previousButton').style.display = currentPage === 1 ? "none" : "inline";
+            document.getElementById('nextButton').style.display = currentPage === totalPages ? "none" : "inline";
+        }
+
+        // Fungsi untuk pindah ke halaman berikutnya
+        function nextPage() {
+            currentPage++;
+            ordersRef.off(); // Hapus event listener sebelumnya
+            ordersRef.on('value', function(snapshot) {
+                renderOrders(snapshot);
+            });
+        }
+
+        // Fungsi untuk kembali ke halaman sebelumnya
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                ordersRef.off(); // Hapus event listener sebelumnya
+                ordersRef.on('value', function(snapshot) {
+                    renderOrders(snapshot);
+                });
+            }
+        }
+
+        // Fungsi untuk mencari data berdasarkan nomor halaman
+        function searchByPageNumber() {
+            const pageNumber = parseInt(document.getElementById('pageNumberInput').value);
+            if (!isNaN(pageNumber) && pageNumber >= 1) {
+                currentPage = pageNumber;
+                ordersRef.off(); // Hapus event listener sebelumnya
+                ordersRef.on('value', function(snapshot) {
+                    renderOrders(snapshot);
+                });
+            } else {
+                alert('Masukkan nomor halaman yang valid.');
+            }
+        }
+
+        // Fungsi untuk menghapus data
+        function confirmDelete(orderKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                ordersRef.child(orderKey).remove()
+                    .then(() => alert('Data berhasil dihapus.'))
+                    .catch(error => console.error('Gagal menghapus data:', error));
+            }
+        }
+
+        // Fungsi untuk menghapus semua data
+        function deleteAllOrders() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
+                ordersRef.remove()
+                    .then(() => alert('Semua data berhasil dihapus.'))
+                    .catch(error => console.error('Gagal menghapus semua data:', error));
+            }
+        }
+
+        // Fungsi untuk mengirimkan formulir
+        function submitOrder(event) {
+            event.preventDefault();
+
+            const deskripsi = document.getElementById('Deskripsi').value;
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const storageRef = firebase.storage().ref('pertuni/perpustakaan/data/dpc/files/' + file.name);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed', function(snapshot) {
+                    // Progress event jika ingin menampilkan progress bar
+                }, function(error) {
+                    console.error('Gagal mengunggah file:', error);
+                }, function() {
+                    uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                        const orderData = {
+                            deskripsi: deskripsi,
+                            nama_file: file.name,
+                            fileURL: downloadURL,
+                            deliveryTime: firebase.database.ServerValue.TIMESTAMP,
+                            downloadCount: 0
+                        };
+                        ordersRef.push(orderData).then(() => {
+                            // Setelah data berhasil disimpan, kosongkan form
+                            clearForm();
+                            // Tampilkan data yang baru saja dikirim
+                            ordersRef.once('value', function(snapshot) {
+                                renderOrders(snapshot);
+                            });
+                        });
+                        alert('Data berhasil disimpan.');
+                    });
+                });
+            } else {
+                alert('Pilih file untuk diunggah.');
+            }
+        }
+
+        // Fungsi untuk membersihkan formulir
+        function clearForm() {
+            document.getElementById('Deskripsi').value = '';
+            document.getElementById('fileInput').value = '';
+        }
+
+        // Fungsi untuk menampilkan email pengguna yang sedang login
+        function displayUserEmail() {
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    document.getElementById('userEmail').textContent = 'Email Anda: ' + user.email;
+                } else {
+                    window.location.href = 'login.html'; // Redirect ke halaman login jika belum login
+                }
+            });
+        }
+
+        // Fungsi untuk berbagi konten
+        function shareContent() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Perpustakaan Pertuni',
+                    text: 'Jelajahi data arsip dan perpustakaan kami di halaman ini!',
+                    url: window.location.href
+                })
+                .then(() => {
+                    console.log('Konten berhasil dibagikan');
+                })
+                .catch((error) => {
+                    console.error('Gagal berbagi konten:', error);
+                });
+            } else {
+                alert('Fungsi berbagi tidak didukung di perangkat Anda');
+            }
+        }
+
+        // Jalankan fungsi untuk menampilkan email pengguna saat halaman dimuat
+        window.onload = function() {
+            displayUserEmail();
+
+            // Menampilkan data dari Firebase Realtime Database
+            ordersRef.on('value', function(snapshot) {
+                renderOrders(snapshot);
+            });
+        };
+    </script>
+    
+    <!-- Tombol Kembali -->
+    <button class="back-button" onclick="window.location.href='templeate surat.html'">Kembali</button>
+</body>
+</html>

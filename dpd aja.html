@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    /* Gaya untuk teks agar berwarna biru muda */
+    h1, p, label, button {
+      color: #ADD8E6; /* Warna biru muda */
+    }
+
+    /* Membuat gambar logo dan elemen-elemen lain responsif */
+    img {
+      max-width: 100%; /* Gambar akan menyesuaikan lebar layar */
+      height: auto;    /* Menjaga rasio gambar */
+      display: block;
+      margin: 0 auto; /* Menjadikan gambar berada di tengah */
+    }
+
+    /* Membuat latar belakang halaman responsif */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0; /* Warna latar belakang */
+    }
+
+    /* Formulir dan tombol responsif */
+    form {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="text"], button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    /* Responsif untuk tampilan mobile */
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 24px;
+      }
+
+      p {
+        font-size: 16px;
+      }
+
+      form {
+        padding: 10px;
+      }
+
+      button {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni">
+  <header>  
+    <h1>Database Anggota DPD Pertuni Jambi</h1>
+  </header>
+
+  <!-- Formulir Pencarian -->
+  <form id="searchForm">
+    <label>Pilih Kategori:</label><br>
+    <input type="checkbox" name="category" value="Nama Lengkap"> Nama Lengkap<br>
+    <input type="checkbox" name="category" value="Agama"> Agama<br>
+    <input type="checkbox" name="category" value="Kota/Kabupaten"> Kota/Kabupaten<br>
+    <input type="text" id="searchInput" placeholder="Masukkan kata kunci pencarian">
+    <button type="button" onclick="search()">Cari</button>
+  </form>
+
+  <div id="output"></div>
+
+  <div id="keterangan"></div>
+
+  <div id="detail">
+             
+  </div>
+
+  <!-- Keterangan Jumlah -->
+  <div id="jumlahKeterangan"></div>
+
+  <button onclick="previousData()">Sebelumnya</button>
+  <button onclick="nextData()">Selanjutnya</button>
+  <button class="back-button" onclick="window.location.href='admin aja.html'">Kembali</button>
+  <script>
+    var url = 'https://script.google.com/macros/s/AKfycbyy_jdh5KKU9twtEy5FKzEDLaOv53nJ0epA-82Iil0D289HfCcZARUV5aUyRj0egTaSxQ/exec';
+    var searchData = [];
+    var currentIndex = 0;
+    var data;
+
+    function search() {
+      var categories = document.getElementsByName('category');
+      var selectedCategories = [];
+      for (var i = 0; i < categories.length; i++) {
+        if (categories[i].checked) {
+          selectedCategories.push(categories[i].value);
+        }
+      }
+      var searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+      searchData = data.filter(function(item) {
+        for (var i = 0; i < selectedCategories.length; i++) {
+          if (item[selectedCategories[i]].toLowerCase().includes(searchInput)) {
+            return true;
+          }
+        }
+        return false;
+      });
+      currentIndex = 0;
+      showData();
+    }
+
+    function showData() {
+      var data = searchData[currentIndex];
+
+      if (data) {
+        document.getElementById('output').innerHTML = `
+          <p>Nama Lengkap: ${data['Nama Lengkap']}</p>          
+          <p>Cabang Pertuni: ${data['Kota/Kabupaten']}</p>          
+          <p>Jenis Keanggotaan: ${data['Jabatan']}</p>                                  
+          <p>Nomor Anggota: ${data['Nomor Anggota']}</p>                        
+          <p>Jenis kelamin: ${data['Jenis Kelamin']}</p>
+          <p>Jenis Disabilitas Netra: ${data['Jenis Disabilitas Netra']}</p>
+          <p>Alamat: ${data['Alamat']}</p>
+          <p>Agama: ${data['Agama']}</p>                                
+          <p>TTL: ${data['TTL']}</p>                      
+          <p>Status: ${data['Status']}</p>
+          <p>Pendidikan Terakhir: ${data['Pendidikan Terakhir']}</p>          
+          <p>Pekerjaan: ${data['Pekerjaan']}</p>          
+          <p>Nomor Telepon: <a href="tel:${data['Nomor Telepon']}">${data['Nomor Telepon']}</a></p>                                                
+      <p>Email: <a href="mailto:${data['Email']}">${data['Email']}</a></p>      
+      <p>Hobby: ${data['Hobby']}</p>
+          <a href="${data['Photo']}" target="_blank">Buka Gambar</a>
+          <p>NIK: ${data['NIK']}</p>
+          <p>KTP: ${data['KTP']}</p>      
+        `;
+
+        document.getElementById('keterangan').innerHTML = 'Data ditemukan';
+
+        // Tampilkan keterangan jumlah dengan format yang benar
+        document.getElementById('jumlahKeterangan').innerHTML = `Keterangan Jumlah: ${currentIndex + 1} of ${searchData.length} pencarian yang ditemukan`;
+
+      } else {
+        document.getElementById('output').innerHTML = '';
+        document.getElementById('keterangan').innerHTML = 'Data tidak ditemukan';
+        document.getElementById('jumlahKeterangan').innerHTML = '';
+      }
+
+      showDetail();
+    }
+
+    function showDetail() {
+      var data = searchData[currentIndex];
+document.getElementById('detailKeterangan').innerHTML = data ? data['Keterangan'] : '';        
+      document.getElementById('detailNamaLengkap').innerHTML = data ? data['Nama Lengkap'] : '';        
+      document.getElementById('detailKotaKabupaten').innerHTML = data ? data['Kota/Kabupaten'] : '';      
+      document.getElementById('detailJabatan').innerHTML = data ? data['Jabatan'] : '';            
+      document.getElementById('detailNomorAnggota').innerHTML = data ? data['Nomor Anggota'] : '';      
+      document.getElementById('detailJenisKelamin').innerHTML = data ? data['Jenis Kelamin'] : '';      
+      document.getElementById('detailAlamat').innerHTML = data ? data['Alamat'] : '';
+      document.getElementById('detailAgama').innerHTML = data ? data['Agama'] : '';                        
+      document.getElementById('detailTTL').innerHTML = data ? data['TTL'] : '';
+      document.getElementById('detailEmail').innerHTML = data ? data['Email'] : '';
+      document.getElementById('detailStatus').innerHTML = data ? data['Status'] : '';
+      document.getElementById('detailPekerjaan').innerHTML = data ? data['Pekerjaan'] : '';            
+      document.getElementById('detailNomorTelepon').innerHTML = data ? data['Nomor Telepon'] : '';              
+      document.getElementById('detailHobby').innerHTML = data ? data['Hobby'] : '';      
+      document.getElementById('detailPhoto').innerHTML = data ? data['Photo'] : '';
+      document.getElementById('detailNIK').innerHTML =data ? data['NIK'] : '';
+      document.getElementById('detailKTP').innerHTML = data ? data['KTP'] : '';          
+    }
+
+    function showAllData() {
+      searchData = data;
+      currentIndex = 0;
+      showData();
+    }
+
+    function previousData() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        showData();
+      }
+    }
+
+    function nextData() {
+      if (currentIndex < searchData.length - 1) {
+        currentIndex++;
+        showData();
+      }
+    }
+
+    fetch(url)
+      .then(response => response.json())
+      .then(dataResponse => {
+        data = dataResponse;
+        showAllData();
+      })
+      .catch(error =>console.error('Error:', error));
+    </script>
+  </body>
+</html>
+
+

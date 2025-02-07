@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir Pendaftaran Pertuni Pijat Netra Provinsi Jambi </title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        form {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input {
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .back-button {
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            display: block;
+            width: 100%;
+        }
+
+        .back-button:hover {
+            background-color: #e53935;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            form {
+                padding: 15px;
+            }
+
+            button, .back-button {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            label {
+                font-size: 14px;
+            }
+
+            input, textarea {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            button, .back-button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <form id="pantiForm">
+        <label for="namaPanti">Nama Panti:</label>
+        <input type="text" id="namaPanti" name="namaPanti" required><br><br>
+
+        <label for="deskripsi">Deskripsi:</label>
+        <textarea id="deskripsi" name="deskripsi" required></textarea><br><br>
+
+        <label for="nomorAdmin">Nomor Admin:</label>
+        <input type="text" id="nomorAdmin" name="nomorAdmin" required><br><br>
+
+        <label for="alamatPanti">Alamat Panti:</label>
+        <input type="text" id="alamatPanti" name="alamatPanti" required><br><br>
+
+        <label for="lokasiMaps">Lokasi Maps:</label>
+        <input type="text" id="lokasiMaps" name="lokasiMaps"><br><br>
+
+        <label for="kabupaten">Kabupaten/Kota:</label><br>
+        <label><input type="radio" name="kabupaten" value="Kota Jambi" class="kabupaten"> Kota Jambi</label><br>
+        <label><input type="radio" name="kabupaten" value="Kota Sungai Penuh" class="kabupaten"> Kota Sungai Penuh</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Batanghari" class="kabupaten"> Kabupaten Batanghari</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Bungo" class="kabupaten"> Kabupaten Bungo</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Kerinci" class="kabupaten"> Kabupaten Kerinci</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Merangin" class="kabupaten"> Kabupaten Merangin</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Muaro Jambi" class="kabupaten"> Kabupaten Muaro Jambi</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Sarolangun" class="kabupaten"> Kabupaten Sarolangun</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Tanjung Jabung Barat" class="kabupaten"> Kabupaten Tanjung Jabung Barat</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Tanjung Jabung Timur" class="kabupaten"> Kabupaten Tanjung Jabung Timur</label><br>
+        <label><input type="radio" name="kabupaten" value="Kabupaten Tebo" class="kabupaten"> Kabupaten Tebo</label><br>
+<p>Silahkan pilih jenis terapis yang tersedia di Panti Anda</p>        
+        <label for="terapis">Terapis:</label>
+        <label><input type="checkbox" value="Terapis laki-laki" class="terapis"> Terapis laki-laki</label>
+        <label><input type="checkbox" value="Terapis perempuan" class="terapis"> Terapis perempuan</label><br>
+
+        <label for="jamBuka">Jam Buka:</label>
+        <input type="number" id="jamBuka" name="jamBuka" min="0" max="23" required> :
+        <input type="number" id="menitBuka" name="menitBuka" min="0" max="59" required><br><br>
+
+        <label for="jamTutup">Jam Tutup:</label>
+        <input type="number" id="jamTutup" name="jamTutup" min="0" max="23" required> :
+        <input type="number" id="menitTutup" name="menitTutup" min="0" max="59" required><br><br>
+
+        <label for="biaya1">Biaya 1 Jam:</label>
+        <input type="number" id="biaya1" name="biaya1"><br><br>
+
+<label for="biaya1_5">Biaya 1.5 Jam:</label>
+        <input type="number" id="biaya1_5" name="biaya1_5"><br><br>
+
+        <label for="biaya2">Biaya 2 Jam:</label>
+        <input type="number" id="biaya2" name="biaya2"><br><br>
+
+<label for="biayaperselesai">Biaya Perselesai:</label>
+        <input type="text" id="biayaperselesai" name="biayaperselesai"><br><br>
+
+        <label for="photoPanti">Foto Panti:</label>
+        <input type="file" id="photoPanti" name="photoPanti" accept=".jpg,.gif,.img,.png"><br><br>
+        
+        <label for="backsound">Backsound:</label>
+        <input type="file" id="backsound" name="backsound" accept=".mp3,.wav"><br><br>
+
+        <div class="form-group">
+            <label>Data Pengguna</label>
+            <input type="text" id="nama" placeholder="Nama" readonly>
+            <input type="text" id="alamat" placeholder="Alamat" readonly>
+            <input type="text" id="nomor_telepon" placeholder="Nomor Telepon" readonly>
+            <input type="text" id="email" placeholder="Email" readonly>
+        </div>
+                
+        <button type="submit" id="submitButton">Kirim</button>
+    </form>
+    <button class="back-button" onclick="window.location.href='member ppn.html'">Kembali</button>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+            authDomain: "dpd-pertuni.firebaseapp.com",
+            databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dpd-pertuni",
+            storageBucket: "dpd-pertuni.appspot.com",
+            messagingSenderId: "253614860627",
+            appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+            measurementId: "G-6J7XZB9R8K"
+        };
+
+
+    // Fungsi untuk otomatis menambahkan kode negara pada nomor telepon
+    function autoAddCountryCode() {
+        var nomorAdmin = document.getElementById('nomorAdmin');
+        if (nomorAdmin.value.startsWith('08')) {
+            nomorAdmin.value = '+628' + nomorAdmin.value.substring(2);
+        } else if (nomorAdmin.value.length > 0 && nomorAdmin.value[0] !== '+') {
+            nomorAdmin.value = '+62' + nomorAdmin.value;
+        }
+    }
+        
+    const form = document.getElementById('pantiForm');
+        const submitButton = document.getElementById('submitButton');
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const storage = firebase.storage();
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                const userRef = database.ref(`pertuni/perpustakaan/pengguna/${user.uid}`);
+                const snapshot = await userRef.once('value');
+                const data = snapshot.val();
+
+                if (data) {
+                    document.getElementById('nama').value = data.nama || '';
+                    document.getElementById('alamat').value = data.alamat || '';
+                    document.getElementById('nomor_telepon').value = data.nomor_telepon || '';
+                    document.getElementById('email').value = data.email || '';
+                }
+
+                const formRef = database.ref(`pertuni/perpustakaan/pijat/form/${user.uid}`);
+                const formSnapshot = await formRef.once('value');
+                const formData = formSnapshot.val();
+
+                if (formData) {
+                    // Populate the form with existing data
+                    document.getElementById('namaPanti').value = formData.namaPanti;
+                    document.getElementById('deskripsi').value = formData.deskripsi;
+                    document.getElementById('nomorAdmin').value = formData.nomorAdmin;
+                    document.getElementById('alamatPanti').value = formData.alamatPanti;
+                    document.getElementById('lokasiMaps').value = formData.lokasiMaps;
+                    document.getElementById('jamBuka').value = formData.jamBuka;
+                    document.getElementById('menitBuka').value = formData.menitBuka;
+                    document.getElementById('jamTutup').value = formData.jamTutup;
+                    document.getElementById('menitTutup').value = formData.menitTutup;
+                    document.getElementById('biaya1').value = formData.biaya1;
+                    document.getElementById('biaya1_5').value = formData.biaya1_5;
+                    document.getElementById('biaya2').value = formData.biaya2;
+                    document.getElementById('biayaperselesai').value = formData.biayaperselesai;
+
+                    // Handle checkboxes for kabupaten, terapis, hari kerja
+                    formData.kabupaten.forEach(value => {
+                        const checkbox = document.querySelector(`input[type="checkbox"][value="${value}"].kabupaten`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+
+                    formData.terapis.forEach(value => {
+                        const checkbox = document.querySelector(`input[type="checkbox"][value="${value}"].terapis`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+
+                    // Update the button text to "Update" after data is loaded
+                    submitButton.textContent = "Update";
+                }
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+        // Validasi Kabupaten/Kota: Cek jika setidaknya satu checkbox tercentang
+        const kabupatenCheckboxes = document.querySelectorAll('.kabupaten');
+        const iskabupatenSelected = Array.from(kabupatenCheckboxes).some(checkbox => checkbox.checked);
+
+        if (!iskabupatenSelected) {
+            alert('Pilih setidaknya satu Kabupaten/Kota yang tersedia!');
+            return;
+        }
+    
+        // Validasi Terapis: Cek jika setidaknya satu checkbox tercentang
+        const terapisCheckboxes = document.querySelectorAll('.terapis');
+        const isTerapisSelected = Array.from(terapisCheckboxes).some(checkbox => checkbox.checked);
+
+        if (!isTerapisSelected) {
+            alert('Pilih setidaknya satu terapis yang tersedia!');
+            return;
+        }
+    
+    // Menambahkan kode negara otomatis sebelum pengiriman form
+    autoAddCountryCode();
+
+        const namaPanti = document.getElementById('namaPanti').value
+        // Validasi Nama Panti
+        if (namaPanti === '') {
+            alert('Nama Panti harus diisi.');
+            event.preventDefault(); // Mencegah pengiriman formulir
+            return;
+        }
+
+            const deskripsi = document.getElementById('deskripsi').value;
+        // Validasi Deskripsi
+        if (deskripsi === '') {
+            alert('Deskripsi harus diisi.');
+            event.preventDefault(); // Mencegah pengiriman formulir
+            return;
+        }
+
+            const nomorAdmin = document.getElementById('nomorAdmin').value;
+        // Validasi Nomor Admin
+        if (nomorAdmin === '') {
+            alert('Nomor Admin harus diisi.');
+            event.preventDefault(); // Mencegah pengiriman formulir
+            return;
+        }
+
+            const alamatPanti = document.getElementById('alamatPanti').value;
+        // Validasi Alamat Panti
+        if (alamatPanti === '') {
+            alert('Alamat Panti harus diisi.');
+            event.preventDefault(); // Mencegah pengiriman formulir
+            return;
+        }
+
+            const lokasiMaps = document.getElementById('lokasiMaps').value;
+        // Validasi Lokasi Maps
+        if (lokasiMaps === '') {
+            alert('Lokasi Maps harus diisi.');
+        event.preventDefault(); // Mencegah pengiriman formulir
+        return;
+    }
+
+    // Validasi Lokasi Maps harus diawali dengan 'https://'
+    if (!lokasiMaps.startsWith("https://")) {
+        alert('Lokasi Maps harus dimulai dengan "https://".');
+        event.preventDefault(); // Mencegah pengiriman formulir
+        return;
+    }
+
+    const nama = document.getElementById('nama').value;
+            const alamat = document.getElementById('alamat').value;
+            const nomor_telepon = document.getElementById('nomor_telepon').value;
+            const email = document.getElementById('email').value;
+            const jamBuka = document.getElementById('jamBuka').value;
+            const menitBuka = document.getElementById('menitBuka').value;
+            const jamTutup = document.getElementById('jamTutup').value;
+            const menitTutup = document.getElementById('menitTutup').value;
+            const biaya1 = document.getElementById('biaya1').value;
+            const biaya1_5 = document.getElementById('biaya1_5').value;
+            const biaya2 = document.getElementById('biaya2').value;
+            const biayaperselesai = document.getElementById('biayaperselesai').value;
+        // Periksa apakah minimal salah satu biaya diisi
+        if (!biaya1 && !biaya1_5 && !biaya2 && !biayaperselesai) {
+            alert('Maaf, Minimal salah satu biaya harus diisi!');
+            event.preventDefault(); // Mencegah pengiriman formulir
+            return;
+        }
+
+        const kabupaten = [];
+            const terapis = [];
+
+            // Collect selected checkboxes for kabupaten
+            document.querySelectorAll('.kabupaten:checked').forEach(checkbox => kabupaten.push(checkbox.value));
+
+            // Collect selected checkboxes for terapis
+            document.querySelectorAll('.terapis:checked').forEach(checkbox => terapis.push(checkbox.value));
+
+            // Prepare the form data object
+            const formData = {
+                namaPanti,
+                deskripsi,
+                nomorAdmin,
+                alamatPanti,
+                lokasiMaps,
+                nama,
+                alamat,
+                nomor_telepon,
+                email,
+                jamBuka,
+                menitBuka,
+                jamTutup,
+                menitTutup,
+                biaya1,
+                biaya1_5,
+                biaya2,
+                biayaperselesai,
+                kabupaten,
+                terapis,
+            };
+
+            // Handle file uploads for photoPanti and backsound
+            const photoPantiFile = document.getElementById('photoPanti').files[0];
+            const backsoundFile = document.getElementById('backsound').files[0];
+
+            if (photoPantiFile) {
+                const photoPantiRef = storage.ref().child(`pertuni/perpustakaan/photoPanti/${photoPantiFile.name}`);
+                await photoPantiRef.put(photoPantiFile);
+                formData.photoPanti = await photoPantiRef.getDownloadURL();
+            }
+
+            if (backsoundFile) {
+                const backsoundRef = storage.ref().child(`pertuni/perpustakaan/backsound/${backsoundFile.name}`);
+                await backsoundRef.put(backsoundFile);
+                formData.backsound = await backsoundRef.getDownloadURL();
+            }
+
+            // Push the form data to Firebase
+            const userId = auth.currentUser.uid;
+            const formRef = database.ref(`pertuni/perpustakaan/pijat/form/${userId}`);
+            await formRef.set(formData);
+
+            // Show a confirmation message
+            alert('Data berhasil diperbarui!');
+
+            // Reset the form after submission
+            form.reset();
+        });
+    </script>
+</body>
+</html>

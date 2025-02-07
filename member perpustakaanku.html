@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Perpustakaan</title>
+    <style>
+      /* Mengatur warna latar belakang dengan gambar dan responsivitas */
+      body {
+          background-image: url('awan.gif');
+          background-size: cover;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          font-family: Arial, sans-serif;
+          color: #000000; /* Warna teks menjadi hitam */
+          margin: 0;
+          padding: 0;
+          text-align: center;
+      }
+
+      /* Container utama menu */
+      .menu-container {
+          position: relative;
+          z-index: 1;
+          padding: 20px;
+          text-align: center;
+          margin-top: 50px;
+      }
+
+      /* Tombol menu dan item menu */
+      .menu-item, .menu-button {
+          display: inline-block;
+          margin: 10px;
+          padding: 15px 30px;
+          background-color: rgba(255, 255, 255, 0.7); /* transparan agar latar belakang sedikit terlihat */
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+          text-decoration: none;
+          color: lightblue; /* Warna teks biru muda */
+          border: none;
+          font-size: 16px;
+      }
+
+      /* Efek hover untuk tombol menu */
+      .menu-item:hover, .menu-button:hover {
+          background-color: rgba(240, 240, 240, 0.8);
+      }
+
+      /* Tombol kembali */
+      .back-button {
+          margin-top: 20px;
+          padding: 10px 20px;
+          background-color: #4CAF50;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 16px;
+      }
+
+      /* Efek hover untuk tombol kembali */
+      .back-button:hover {
+          background-color: #3e8e41;
+      }
+
+      /* Submenu yang tersembunyi */
+      .submenu-container {
+          display: none;
+          margin-top: 20px;
+      }
+
+      /* Menambahkan responsivitas pada tampilan layar kecil */
+      @media (max-width: 600px) {
+          .menu-container {
+              padding: 10px;
+              margin-top: 20px;
+          }
+
+          .menu-item, .menu-button {
+              padding: 12px 25px;
+              font-size: 14px;
+          }
+
+          .back-button {
+              padding: 8px 18px;
+              font-size: 14px;
+          }
+      }
+
+  </style>
+</head>
+<body>
+    <div class="menu-container">
+        <div id="main-menu">
+            <button class="menu-button" id="pengetahuan-button">Pengetahuan</button>
+            <div id="pengetahuan-menu" class="submenu-container">
+                <a href="umum.html" class="menu-item">Pengetahuan Umum</a>
+                <a href="agama.html" class="menu-item">Pengetahuan Agama</a>
+            </div>
+            <button class="menu-button" id="aplikasi-button">Aplikasi</button>
+            <div id="aplikasi-menu" class="submenu-container">
+                <a href="hand phone.html" class="menu-item">Hand Phone</a>
+                <a href="komputer.html" class="menu-item">Komputer</a>
+            </div>
+        </div>
+    </div>
+    <button class="back-button" onclick="window.location.href='index.html'">Kembali</button>
+
+    <script>
+      const pengetahuanButton = document.getElementById('pengetahuan-button');
+      const aplikasiButton = document.getElementById('aplikasi-button');
+      const pengetahuanMenu = document.getElementById('pengetahuan-menu');
+      const aplikasiMenu = document.getElementById('aplikasi-menu');
+
+      pengetahuanButton.addEventListener('click', function() {
+        pengetahuanMenu.style.display = pengetahuanMenu.style.display === 'block' ? 'none' : 'block';
+        aplikasiMenu.style.display = 'none'; // Hide aplikasi menu
+      });
+
+      aplikasiButton.addEventListener('click', function() {
+        aplikasiMenu.style.display = aplikasiMenu.style.display === 'block' ? 'none' : 'block';
+        pengetahuanMenu.style.display = 'none'; // Hide pengetahuan menu
+      });
+    </script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertuni Pijat Netra Provinsi Jambi</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Styling the background */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: rgba(255, 255, 255, 0.8); /* White transparent background */
+            background-image: url(''); /* URL will be dynamically inserted */
+            background-size: contain; /* Smaller size */
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+            color: black; /* Set text color to black */
+            text-align: justify; /* Make text justified */
+        }
+
+        /* Title styling */
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+            margin-top: 20px;
+        }
+
+        /* General form styling */
+        div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            margin-top: 20px;
+            color: black; /* Set default color to black */
+            width: 100%; /* Ensure div is full-width */
+            box-sizing: border-box;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: black; /* Set label color to black */
+            width: 100%; /* Ensure labels are full-width */
+        }
+
+        /* Input field and buttons styling */
+        #searchText {
+            padding: 10px;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            accent-color: black; /* Set checkbox color to black */
+        }
+
+        input[type="checkbox"]:checked {
+            accent-color: darkblue; /* Change color when checked */
+        }
+
+        /* Checked checkbox label styling */
+        input[type="checkbox"]:checked + label {
+            font-weight: bold;
+            color: darkblue; /* Dark blue color for checked items */
+        }
+
+        /* Container for data display */
+        #data-container {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 80%;
+            box-sizing: border-box;
+            text-align: justify; /* Justify the text */
+        }
+
+        /* Pagination styling */
+        #pagination {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            button {
+                font-size: 0.9rem;
+                width: 100%;
+            }
+
+            #searchText {
+                font-size: 0.9rem;
+                max-width: 250px;
+            }
+
+            #data-container {
+                max-width: 90%;
+            }
+
+            div {
+                padding: 5px;
+                width: 100%;
+            }
+        }
+
+        /* Hide audio element but keep functionality */
+        #audioSource {
+            display: none;
+        }
+
+        /* Style for the order button */
+        .tombol-pesan {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #ff5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .tombol-pesan:hover {
+            background-color: #e14c29;
+        }
+
+        #notification {
+            font-size: 1rem;
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+    </head>
+<body>
+    <h1>Data Pertuni Pijat Netra Provinsi Jambi</h1>
+    <div>
+
+        <label><input type="checkbox" id="namaPanti"> Nama Panti</label><br>
+        <label><input type="checkbox" id="kabupatenKota"> Kabupaten/Kota</label><br>
+        <input type="text" id="searchText" placeholder="Masukkan kata kunci...">
+        <button onclick="searchData()">Cari</button>
+    </div>
+    <p id="notification"></p>
+    <div id="data-container"></div>
+    <p id="pagination"></p> <!-- For displaying "1 of total" -->
+    <button id="previous" onclick="navigate(-1)">Sebelumnya</button>
+    <button id="next" onclick="navigate(1)">Selanjutnya</button>
+
+    <!-- Order button that appears after navigation -->
+    <button class="tombol-pesan" onclick="renderOrderForm()">Pesan</button>
+
+    <!-- Audio element for the background sound -->
+    <audio id="backgroundAudio" loop autoplay>
+        <source id="audioSource" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        
+        const db = firebase.database();
+        let data = [];
+        let filteredData = [];
+        let currentIndex = 0;
+
+        // Fetch data from Firebase Realtime Database
+        async function fetchData() {
+            const dataContainer = document.getElementById('data-container');
+            dataContainer.innerHTML = '<p>Loading data...</p>';
+
+            try {
+                const snapshot = await db.ref('pertuni/perpustakaan/pijat/form').once('value');
+                data = snapshot.val() ? Object.values(snapshot.val()) : [];
+                
+                if (data.length > 0) {
+                    filteredData = [...data];  // Initialize filtered data
+                    displayData();
+                } else {
+                    dataContainer.innerHTML = '<p>No data found.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                dataContainer.innerHTML = '<p>Error loading data.</p>';
+            }
+        }
+
+        // Function to display data
+        function displayData() {
+            const dataContainer = document.getElementById('data-container');
+            const pagination = document.getElementById('pagination');
+
+            if (filteredData.length > 0 && currentIndex >= 0 && currentIndex < filteredData.length) {
+                const item = filteredData[currentIndex];
+
+                // Set the background image from the photoPanti URL
+                if (item.photoPanti) {
+                    document.body.style.backgroundImage = `url(${item.photoPanti})`;
+                }
+
+// Set the background audio source from the data
+const backgroundAudio = document.getElementById('backgroundAudio');
+if (item.backsound) {
+    const audioSource = document.getElementById('audioSource');
+    audioSource.src = item.backsound;  // Update the backsound URL
+    backgroundAudio.load();  // Reload the audio with the new source
+    backgroundAudio.play();  // Play the audio
+}
+
+
+                // Filter Biaya
+                let biayaHTML = '';
+                if (item.biaya1) biayaHTML += `<input type="checkbox" id="biaya1" /> <label for="biaya1"><strong>Biaya 1 Jam:</strong> ${item.biaya1}</label><br>`;
+                if (item.biaya1_5) biayaHTML += `<input type="checkbox" id="biaya1_5" /> <label for="biaya1_5"><strong>Biaya 1.5 Jam:</strong> ${item.biaya1_5}</label><br>`;
+                if (item.biaya2) biayaHTML += `<input type="checkbox" id="biaya2" /> <label for="biaya2"><strong>Biaya 2 Jam:</strong> ${item.biaya2}</label><br>`;
+                if (item.biayaperselesai) biayaHTML += `<input type="checkbox" id="biayaperselesai" /> <label for="biayaperselesai"><strong>Biaya Perselesai:</strong> ${item.biayaperselesai}</label><br>`;
+
+                // Filter Terapis
+                let terapisHTML = '';
+                if (item.terapis && Array.isArray(item.terapis)) {
+                    item.terapis.forEach((terapis, index) => {
+                        terapisHTML += `<input type="checkbox" id="terapis${index}" /> <label for="terapis${index}"><strong>Terapis:</strong> ${terapis}</label><br>`;
+                    });
+                } else if (item.terapis) {
+                    terapisHTML = `<input type="checkbox" id="terapis" /> <label for="terapis"><strong>Terapis:</strong> ${item.terapis}</label><br>`;
+                }
+
+                // Display data with URLs as text
+                dataContainer.innerHTML = ` 
+    <p><strong>Nomor:</strong> ${currentIndex + 1}</p> <!-- Add the automatic numbering here -->
+<p><strong>Nama Panti:</strong> ${item.namaPanti}</p>
+                    <p><strong>Deskripsi:</strong> ${item.deskripsi}</p>
+                    <p><strong>Nomor Admin:</strong> ${item.nomorAdmin}</p>
+                    <p><strong>Kabupaten/Kota:</strong> ${item.kabupaten}</p>
+                    <p><strong>Alamat Panti:</strong> ${item.alamatPanti}</p>
+                    <p><strong>Lokasi Maps:</strong> 
+                        ${item.lokasiMaps ? `<a href="${item.lokasiMaps}" target="_blank">Lihat Lokasi</a>` : 'Tidak tersedia'}
+                    </p>
+                    <p><strong>Jam Buka:</strong> ${item.jamBuka}:${item.menitBuka}</p>
+                    <p><strong>Jam Tutup:</strong> ${item.jamTutup}:${item.menitTutup}</p>
+<p>Silahkan pilih opsi dibawah ini terlebih dahulu!.</p>
+                    ${terapisHTML}
+                    ${biayaHTML}
+
+                `;
+
+                // Update pagination text
+                pagination.innerHTML = `${currentIndex + 1} dari ${filteredData.length}`;
+            }
+        }
+
+        function navigate(direction) {
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < filteredData.length) {
+                currentIndex = newIndex;
+                displayData();
+            }
+        }
+
+        // Fungsi untuk mencari data berdasarkan input pencarian
+        function searchData() {
+    const searchText = document.getElementById('searchText').value.toLowerCase();
+    const isNamaPantiChecked = document.getElementById('namaPanti').checked;
+    const isKabupatenKotaChecked = document.getElementById('kabupatenKota').checked;
+
+    const notification = document.getElementById('notification');
+
+    // Validasi filter
+    if (!isNamaPantiChecked && !isKabupatenKotaChecked) {
+        notification.textContent = 'Pilih minimal satu filter untuk mencari!';
+        return;
+    }
+
+    // Filter data
+    filteredData = data.filter(item => {
+        let matches = true;
+
+        if (isNamaPantiChecked && (!item.namaPanti || !item.namaPanti.toLowerCase().includes(searchText))) {
+            matches = false;
+        }
+        if (isKabupatenKotaChecked && (!item.kabupaten || !item.kabupaten.toLowerCase().includes(searchText))) {
+            matches = false;
+        }
+
+        return matches;
+    });
+
+    // Notifikasi hasil pencarian
+    if (filteredData.length > 0) {
+        notification.textContent = 'Data ditemukan!';
+    } else {
+        notification.textContent = 'Data tidak ditemukan!';
+    }
+
+    // Reset indeks dan tampilkan data
+    currentIndex = 0;
+    displayData();
+}
+
+// Menampilkan formulir pemesanan
+// Function to render the order form and dynamically fill in selected options
+function renderOrderForm() {
+    // Formulir HTML pemesanan
+    const orderFormHTML = `
+        <h2>Form Pemesanan</h2>
+        <label for="nama">Nama: </label><input type="text" id="nama" readonly><br>
+        <label for="alamat">Alamat: </label><input type="text" id="alamat" readonly><br>
+        <label for="nomor_telepon">Nomor Telepon: </label><input type="text" id="nomor_telepon" readonly><br>
+        <label for="email">Email: </label><input type="email" id="email" readonly><br>
+        <label for="terapis">Terapis: </label><textarea id="terapis" readonly></textarea><br>
+        <label for="biaya">Biaya: </label><textarea id="biaya" readonly></textarea><br>
+        <button type="button" onclick="submitOrder()">Kirim Pesanan ke Panti</button>
+    `;
+
+    // Tambahkan formulir di bawah tombol "Pesan"
+    const pesanButton = document.querySelector('.tombol-pesan');
+    pesanButton.insertAdjacentHTML('afterend', orderFormHTML);
+
+    // Ambil data pengguna yang sedang login
+    const user = firebase.auth().currentUser;
+    if (user) {
+        const userRef = db.ref('pertuni/perpustakaan/pengguna/' + user.uid);
+        userRef.once('value').then(snapshot => {
+            const userData = snapshot.val();
+            // Isi data pengguna pada form
+            document.getElementById('nama').value = userData.nama;
+            document.getElementById('alamat').value = userData.alamat;
+            document.getElementById('nomor_telepon').value = userData.nomor_telepon;
+            document.getElementById('email').value = userData.email;
+        });
+    }
+
+    // Update the form fields dynamically based on selected "terapis" and "biaya"
+    let selectedTerapis = [];
+    let selectedBiaya = [];
+
+    // Go through all the checkboxes in the data and find the ones that are checked
+    const terapisCheckboxes = document.querySelectorAll('#data-container input[type="checkbox"]:checked');
+    terapisCheckboxes.forEach(checkbox => {
+        if (checkbox.id.startsWith('terapis')) {
+            selectedTerapis.push(checkbox.nextElementSibling.textContent.trim());
+        }
+    });
+
+    const biayaCheckboxes = document.querySelectorAll('#data-container input[type="checkbox"]:checked');
+    biayaCheckboxes.forEach(checkbox => {
+        if (checkbox.id.startsWith('biaya')) {
+            selectedBiaya.push(checkbox.nextElementSibling.textContent.trim());
+        }
+    });
+
+    // Update the order form with the selected options for "terapis" and "biaya"
+    document.getElementById('terapis').value = selectedTerapis.join(', ');
+    document.getElementById('biaya').value = selectedBiaya.join(', ');
+}
+
+// Function to handle checkbox change and update the order form
+function updateOrderForm() {
+    // Gather the selected options from the displayed checkboxes
+    let selectedTerapis = [];
+    let selectedBiaya = [];
+
+    // Update "terapis" and "biaya" dynamically as checkboxes are selected or deselected
+    const terapisCheckboxes = document.querySelectorAll('#data-container input[type="checkbox"]:checked');
+    terapisCheckboxes.forEach(checkbox => {
+        if (checkbox.id.startsWith('terapis')) {
+            selectedTerapis.push(checkbox.nextElementSibling.textContent.trim());
+        }
+    });
+
+    const biayaCheckboxes = document.querySelectorAll('#data-container input[type="checkbox"]:checked');
+    biayaCheckboxes.forEach(checkbox => {
+        if (checkbox.id.startsWith('biaya')) {
+            selectedBiaya.push(checkbox.nextElementSibling.textContent.trim());
+        }
+    });
+
+    // Update the form fields dynamically
+    document.getElementById('terapis').value = selectedTerapis.join(', ');
+    document.getElementById('biaya').value = selectedBiaya.join(', ');
+}
+
+// Add event listeners for changes in the checkboxes
+document.querySelector('#data-container').addEventListener('change', updateOrderForm);
+;
+
+// Fungsi untuk mengirimkan data pemesanan ke Firebase
+function submitOrder() {
+    const user = firebase.auth().currentUser;
+    const namaPanti = filteredData[currentIndex].namaPanti; // Ambil namaPanti dari data yang sedang ditampilkan
+    const nama = document.getElementById('nama').value;
+    const alamat = document.getElementById('alamat').value;
+    const nomorTelepon = document.getElementById('nomor_telepon').value;
+    const email = document.getElementById('email').value;
+    const terapis = document.getElementById('terapis').value;
+        // Validasi Terapis
+        if (terapis === '') {
+            alert('Terapis harus dipilih terlebih dahulu.');
+            event.preventDefault(); // Mencegah pengiriman formulir
+            return;
+        }
+
+    const biaya = document.getElementById('biaya').value;
+        // Validasi Biaya
+        if (biaya === '') {
+            alert('Biaya harus dipilih terlebih dahulu.');
+            event.preventDefault(); // Mencegah pengiriman formulir
+            return;
+        }
+
+    // Ambil waktu saat ini
+    const timestamp = new Date().toLocaleString(); // Format: "dd/mm/yyyy hh:mm:ss"
+
+    // Ambil nomorAdmin dari data yang sedang ditampilkan
+    const nomorAdmin = filteredData[currentIndex].nomorAdmin;
+
+    // Buat pesan WhatsApp
+    const message = encodeURIComponent(`
+        Hello, saya ingin memesan layanan dari panti ${filteredData[currentIndex].namaPanti},
+        Nama: ${nama}
+        Alamat: ${alamat}
+        Nomor Telepon: ${nomorTelepon}
+        Terapis: ${terapis}
+        Biaya: ${biaya}
+Terimakasih.
+    `);
+
+    // Kirim data ke Firebase
+    const orderData = {
+        namaPanti: namaPanti,
+        nama: nama,
+        alamat: alamat,
+        nomorTelepon: nomorTelepon,
+        email: email,
+        terapis: terapis,
+        biaya: biaya,
+        nomorAdmin: nomorAdmin,
+        waktuPengiriman: timestamp, // Tambahkan waktu pengiriman
+
+    };
+
+    // Simpan data pesanan ke Firebase
+    db.ref('pertuni/perpustakaan/pijat/pesan').push(orderData)
+        .then(() => {
+            // Kirim pesan WhatsApp
+            window.open(`https://wa.me/${nomorAdmin}?text=${message}`, '_blank');
+        })
+        .catch((error) => {
+            console.error('Error submitting order:', error);
+        });
+}
+
+        // Memuat data awal saat halaman dimuat
+        window.onload = fetchData;
+    </script>
+    <button class="back-button" onclick="window.location.href='member ppn.html'">Kembali</button>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Menu</title>
+    <style>
+      body {
+        background-image: url('lautan.gif');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
+      .menu-container {
+        position: relative;
+        z-index: 1;
+      }
+      .menu-item {
+        display: inline-block;
+        margin: 10px;
+        padding: 10px;
+        background-color: white;
+        border-radius: 5px;
+      }
+      .back-button {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .back-button:hover {
+        background-color: #3e8e41;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-container">      
+      <a href="1.admin media windows.html">Admin Windows</a>
+      <br>      
+      <a href="2.admin media word.html">Admin Word</a>
+<br>
+<a href="3.admin media excel.html">Admin Excel</a>
+<br>
+<a href="4.admin media ppt.html">Admin Power Point</a>
+                  
+    </div>
+    <button class="back-button" onclick="window.location.href='perpus komputer.html'">Kembali</button>
+
+    <div id="userEmail"></div> <!-- Menampilkan email user -->
+    
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="../../scripts/firebase-config.js"></script>
+
+    <script>
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                document.getElementById('userEmail').textContent = 'User: ' + user.email;
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+  </body>
+</html>

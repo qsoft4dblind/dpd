@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perwira - Pertuni Wirausaha</title>
+    <style>
+        /* Reset dan Box Sizing */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Basic Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff; /* White background */
+            color: #003366; /* Dark blue text */
+            line-height: 1.6;
+            padding: 20px;
+            text-align: justify; /* Rata kiri-kanan untuk teks */
+        }
+
+        h1, h2 {
+            color: #003366; /* Dark blue color */
+        }
+
+        h1 {
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify; /* Rata kiri-kanan untuk paragraf */
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            background-color: #f4f4f4;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: justify; /* Rata kiri-kanan untuk list item */
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: #003366; /* Dark blue color */
+        }
+
+        .cta {
+            background-color: #003366; /* Dark blue background */
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px;
+            display: block;
+            width: 250px;
+            margin: 20px auto;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .cta:hover {
+            background-color: #005bb5; /* Slightly lighter blue on hover */
+        }
+
+        .play-btn {
+            background-color: #FF6347;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            width: 250px;
+            margin: 10px auto;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+
+        .play-btn:hover {
+            background-color: #FF4500;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            .cta, .play-btn {
+                width: 220px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.1em;
+            }
+
+            .cta, .play-btn {
+                width: 100%;
+            }
+
+            .highlight {
+                font-size: 1.1em;
+            }
+        }
+
+        /* Hide audio element but keep functionality */
+        #audioSource {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="play-btn" id="toggleAudioBtn">Putar Audio</div> <!-- Tombol di atas header H1 -->
+    <h1>Hallo sahabat Pertuni</h1>
+    <h2>Selamat datang di Perwira (Pertuni Wirausaha)</h2>
+
+    <p>Sahabat penasaran kan apa itu Perwira?</p>
+
+    <p>Di era digital ini, teknologi memberikan dampak besar dalam hampir semua aspek kehidupan termasuk dalam dunia wirausaha. Bagi penyandang disabilitas terutama anggota Persatuan Tunanetra Indonesia (Pertuni), tantangan untuk mengakses pasar dan memasarkan produk mereka sering kali lebih besar dibandingkan dengan individu tanpa keterbatasan. Namun, dengan hadirnya <span class="highlight">Perwira (Pertuni Wirausaha)</span>, inovasi aplikasi yang diperkenalkan oleh DPD Pertuni Jambi, para disabilitas netra kini memiliki platform yang memungkinkan mereka untuk memasarkan produk mereka dengan lebih mudah dan luas.</p>
+
+    <p><span class="highlight">Perwira (Pertuni Wirausaha)</span> adalah sebuah aplikasi online shop atau marketplace (platform perdagangan elektronik) yang hadir untuk sahabat Pertuni (non disabilitas), di mana sahabat bisa lebih mudah berbelanja, menjelajah, dan mengenal berbagai produk-produk UMKM Disabilitas Netra secara online sesuai dengan kebutuhan sahabat tanpa harus datang ke tempat.</p>
+
+    <p>Nah, soal produk jangan khawatir, Perwira menyediakan beragam produk dari fashion, kecantikan, kuliner, elektronik, gadget, alat tulis, aksesoris, dan lain-lain loh.</p>
+
+    <p>Tujuan Perwira adalah untuk memudahkan sahabat Pertuni (non disabilitas) dalam melaksanakan belanja online via smartphone untuk mencari kebutuhan sehari-hari sesuai dengan keinginan. Perwira dapat membantu para penjual khususnya para disabilitas netra agar mampu mandiri secara ekonomi dan lebih mudah menawarkan barang dagangan mereka serta membantu pembeli dalam melakukan transaksi serta berinteraksi langsung dengan para penjual melalui fitur pemesanan pada aplikasi. Perwira juga bertujuan untuk membuat belanja online menjadi lebih mudah dan aman, baik untuk penjual maupun pembeli.</p>
+
+    <p>Selain itu, Perwira juga menyediakan berbagai jenis produk mulai dari fashion, kecantikan, makanan ringan, minuman, elektronik, gadget, alat tulis, aksesoris, dan lainnya.</p>
+
+    <h2>Apa saja sih manfaatnya bagi sahabat?</h2>
+    <ul>
+        <li>Aplikasinya ringan dan mudah digunakan.</li>
+        <li>Aplikasinya dapat diunduh secara gratis.</li>
+        <li>Banyak kategori produk yang disediakan.</li>
+        <li>Proses transaksi yang gampang dan gak pake ribet.</li>
+        <li>Turut berpartisipasi untuk mendukung keberlanjutan usaha disabilitas.</li>
+    </ul>
+
+    <p>Tunggu apalagi, yuk Temukan produk Kebutuhan Sehari-Hari sahabat sekarang juga di Perwira!</p>
+    <p><strong>Beli produk kami, rasakan perbedaan sejati. Ayo pesan sekarang, buat kenangan yang tak terlupakan. Mari kita wujudkan UMKM disabilitas agar lebih mandiri secara ekonomi.</strong></p>
+    <p><em>Disabilitas tanpa batas. Disabilitas berkualitas.</em></p>
+    <p>Mari Pesan Sekarang</p>
+
+    <!-- Audio element -->
+    <audio id="backgroundAudio" autoplay loop>
+        <source id="audioSource" src="" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div id="data-container"></div>
+    <div id="pagination"></div>
+
+    <!-- Firebase Script -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+            authDomain: "dpd-pertuni.firebaseapp.com",
+            databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dpd-pertuni",
+            storageBucket: "dpd-pertuni.appspot.com",
+            messagingSenderId: "253614860627",
+            appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+            measurementId: "G-6J7XZB9R8K"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Variables for data and audio
+        let data = [];
+        let filteredData = [];
+        let currentIndex = 0;
+
+        // Fetch data from Firebase Realtime Database
+        async function fetchData() {
+            const dataContainer = document.getElementById('data-container');
+
+            try {
+                const snapshot = await db.ref('pertuni/perpustakaan/audio/perwira').once('value');
+                data = snapshot.val() ? Object.values(snapshot.val()) : [];
+                
+                if (data.length > 0) {
+                    filteredData = [...data];  // Initialize filtered data
+                    displayData();
+                } else {
+                    dataContainer.innerHTML = '<p>No data found.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                dataContainer.innerHTML = '<p>Error loading data.</p>';
+            }
+        }
+
+        // Function to display data
+        function displayData() {
+            const dataContainer = document.getElementById('data-container');
+            const pagination = document.getElementById('pagination');
+
+            if (filteredData.length > 0 && currentIndex >= 0 && currentIndex < filteredData.length) {
+                const item = filteredData[currentIndex];
+
+                // Set the background audio source from the data
+                const backgroundAudio = document.getElementById('backgroundAudio');
+                if (item.backsound) {
+                    const audioSource = document.getElementById('audioSource');
+                    audioSource.src = item.backsound;  // Update the backsound URL
+                    backgroundAudio.load();  // Reload the audio with the new source
+                    backgroundAudio.play();  // Play the audio
+                }
+
+                // Additional logic to display the data...
+            }
+        }
+
+        // Function to toggle audio play/pause
+        const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+        const backgroundAudio = document.getElementById('backgroundAudio');
+        toggleAudioBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            if (backgroundAudio.paused) {
+                backgroundAudio.play();
+                toggleAudioBtn.textContent = 'Jeda Audio';
+            } else {
+                backgroundAudio.pause();
+                toggleAudioBtn.textContent = 'Putar Audio';
+            }
+        });
+
+        // Initialize by fetching data
+        fetchData();
+    </script>
+    <button class="back-button" onclick="window.location.href='member perwira.html'">Kembali</button>
+</body>
+</html>
+

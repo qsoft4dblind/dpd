@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <title>Admin Excel</title>
+    <link rel="stylesheet" type="text/css" href="gaya tulisan.css">
+    <style>
+        /* CSS tambahan untuk tombol media */
+        .media-buttons button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni">
+    <header>
+        <h1>Admin Excel</h1>
+
+        <!-- Formulir Input -->
+        <form id="orderForm" onsubmit="submitOrder(event)">
+            <textarea id="Deskripsi" placeholder="Deskripsi" required></textarea><br>
+            <input type="file" id="fileInput" required><br> <!-- Input untuk unggah file -->
+            <textarea id="inputLink" placeholder="Input link"></textarea><br> <!-- Input untuk link -->
+            <input type="file" id="fileSoalInput"><br> <!-- Input untuk file soal -->
+            <input type="password" id="passwordInput" placeholder="Password untuk file soal"><br> <!-- Input Password -->
+            <button type="submit">Kirim</button>
+        </form>
+
+        <button id="deleteAllButton" onclick="deleteAllOrders()">Hapus Semua data</button>
+        <button class="back-button" onclick="window.location.href='admin media.html'">Kembali</button>
+
+        <div id="userEmail"></div>
+
+        <input type="number" id="pageNumberInput" placeholder="Nomor Halaman">
+        <button onclick="searchByPageNumber()">Cari</button>
+    </header>
+
+    <div id="pageInfo"></div>
+    <div id="displayData"></div>
+    <button id="previousButton" onclick="previousPage()">Sebelumnya</button>
+    <button id="nextButton" onclick="nextPage()">Selanjutnya</button>
+
+            <!-- FIREBASE -->
+            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+                
+            <script src="script.js"></script>
+    
+        <script>
+    
+        const database = firebase.database();
+        const ordersRef = database.ref('pertuni/perpustakaan/excel');
+
+        var currentPage = 1;
+        var ordersPerPage = 1;
+
+        ordersRef.on('value', function (snapshot) {
+            renderOrders(snapshot);
+        }, function (error) {
+            console.error(error);
+        });
+
+        function nextPage() {
+            currentPage++;
+            ordersRef.off();
+            ordersRef.on('value', function(snapshot) {
+                renderOrders(snapshot);
+            });
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                ordersRef.off();
+                ordersRef.on('value', function(snapshot) {
+                    renderOrders(snapshot);
+                });
+            }
+        }
+
+        function searchByPageNumber() {
+            var pageNumber = parseInt(document.getElementById('pageNumberInput').value);
+            if (!isNaN(pageNumber) && pageNumber >= 1) {
+                currentPage = pageNumber;
+                ordersRef.off();
+                ordersRef.on('value', function(snapshot) {
+                    renderOrders(snapshot);
+                });
+            } else {
+                alert('Masukkan nomor halaman yang valid.');
+            }
+        }
+
+        function handleFileDownload(fileURL, correctPassword, key) {
+            const userPassword = prompt('Masukkan password untuk mengunduh file:');
+            if (userPassword === correctPassword) {
+                const userEmail = firebase.auth().currentUser.email;
+
+                ordersRef.child(key).transaction(function(order) {
+                    if (order) {
+                        order.downloadCount = (order.downloadCount || 0) + 1;
+                        order.downloaders = order.downloaders || [];
+                        if (!order.downloaders.includes(userEmail)) {
+                            order.downloaders.push(userEmail);
+                        }
+                        return order;
+                    }
+                }, function(error, committed, snapshot) {
+                    if (error) {
+                        console.error('Error updating download count:', error);
+                    } else if (committed) {
+                        console.log('Download count updated.');
+                    }
+                });
+
+                window.open(fileURL, '_blank');
+            } else {
+                alert('Password salah. Tidak dapat mengunduh file.');
+            }
+        }
+
+        function displayDownloaders(key) {
+            ordersRef.child(key).once('value', function(snapshot) {
+                var downloaders = snapshot.val().downloaders || [];
+                var downloadersDiv = document.getElementById('downloaders_' + key);
+                downloadersDiv.innerHTML = '<h3>Daftar Pendownload:</h3><ul>';
+                downloaders.forEach(function(email) {
+                    downloadersDiv.innerHTML += '<li>' + email + '</li>';
+                });
+                downloadersDiv.innerHTML += '</ul>';
+
+                // Tambahkan tombol hapus data pendownload
+                var deleteDownloadersButton = document.createElement('button');
+                deleteDownloadersButton.textContent = 'Hapus Data Pendownload';
+                deleteDownloadersButton.onclick = function () {
+                    if (confirm('Apakah Anda yakin ingin menghapus semua data yang telah mendownload?')) {
+                        deleteDownloaders(key);
+                    }
+                };
+                downloadersDiv.appendChild(deleteDownloadersButton);
+            });
+        }
+
+        function deleteDownloaders(key) {
+            ordersRef.child(key).transaction(function(order) {
+                if (order) {
+                    order.downloaders = [];
+                    return order;
+                }
+            }, function(error, committed, snapshot) {
+                if (error) {
+                    console.error('Error updating downloaders list:', error);
+                } else if (committed) {
+                    console.log('Downloaders list cleared.');
+                    displayDownloaders(key); // Update the display after deletion
+                }
+            });
+        }
+
+        function renderOrders(snapshot) {
+            document.getElementById('displayData').innerHTML = "";
+            var dataCount = 0;
+            var startIndex = (currentPage - 1) * ordersPerPage;
+            snapshot.forEach(function (childSnapshot) {
+                if (dataCount === startIndex) {
+                    var data = childSnapshot.val();
+                    var key = childSnapshot.key;
+                    var orderDiv = document.createElement('div');
+                    orderDiv.id = key;
+                    orderDiv.innerHTML += '<p>Nomor: ' + (dataCount + 1) + '</p>';
+                    orderDiv.innerHTML += '<p>Nama File: ' + data.nama_file + '</p>';
+                    orderDiv.innerHTML += '<p>Deskripsi: ' + data.deskripsi + '</p>';
+                    orderDiv.innerHTML += '<p>Jumlah Unduhan: ' + (data.downloadCount || 0) + '</p>';
+
+                    if (data.fileURL.toLowerCase().includes('.mp4') || data.fileURL.toLowerCase().includes('.webm') || data.fileURL.toLowerCase().includes('.ogv')) {
+                        var videoElement = document.createElement('video');
+                        videoElement.id = 'video_' + key;
+                        videoElement.src = data.fileURL;
+                        videoElement.controls = true;
+                        orderDiv.appendChild(videoElement);
+
+                        var playButton = document.createElement('button');
+                        playButton.textContent = 'Putar Video';
+                        playButton.onclick = function () {
+                            togglePlayPause(videoElement, playButton);
+                        };
+                        orderDiv.appendChild(playButton);
+
+                        var fullScreenButton = document.createElement('button');
+                        fullScreenButton.textContent = 'Layar Penuh';
+                        fullScreenButton.onclick = function () {
+                            toggleFullScreen(videoElement);
+                        };
+                        orderDiv.appendChild(fullScreenButton);
+
+                        var stopButton = document.createElement('button');
+                        stopButton.textContent = 'Berhenti';
+                        stopButton.style.display = 'none';
+                        stopButton.onclick = function () {
+                            stopVideo(videoElement, playButton, stopButton);
+                        };
+                        orderDiv.appendChild(stopButton);
+
+                        // Tombol maju dan mundur 5 detik
+                        var seekButtonsDiv = createSeekButtons(videoElement);
+                        orderDiv.appendChild(seekButtonsDiv);
+
+                    } else if (data.fileURL.toLowerCase().includes('.mp3') || data.fileURL.toLowerCase().includes('.wav') || data.fileURL.toLowerCase().includes('.ogg')) {
+                        var audioElement = document.createElement('audio');
+                        audioElement.id = 'audio_' + key;
+                        audioElement.src = data.fileURL;
+                        orderDiv.appendChild(audioElement);
+
+                        var playButton = document.createElement('button');
+                        playButton.textContent = 'Putar';
+                        playButton.onclick = function () {
+                            togglePlayPause(audioElement, playButton);
+                        };
+                        orderDiv.appendChild(playButton);
+
+                        // Tombol maju dan mundur 5 detik
+                        var seekButtonsDiv = createSeekButtons(audioElement);
+                        orderDiv.appendChild(seekButtonsDiv);
+                    }
+
+                    if (data.inputLink) {
+                        var linkElement = document.createElement('button');
+                        linkElement.textContent = 'Pertanyaan';
+                        linkElement.onclick = function () {
+                            window.open(data.inputLink, '_blank');
+                        };
+                        orderDiv.appendChild(linkElement);
+                    }
+
+                    if (data.fileSoalURL) {
+                        var soalElement = document.createElement('button');
+                        soalElement.textContent = 'Download File';
+                        soalElement.onclick = function () {
+                            handleFileDownload(data.fileSoalURL, data.fileSoalPassword, key);
+                        };
+                        orderDiv.appendChild(soalElement);
+                    }
+
+                    // Tombol untuk menampilkan daftar pendownload
+                    var showDownloadersButton = document.createElement('button');
+                    showDownloadersButton.textContent = 'Lihat Data Pendownload';
+                    showDownloadersButton.onclick = function () {
+                        displayDownloaders(key);
+                    };
+                    orderDiv.appendChild(showDownloadersButton);
+
+                    // Tempat untuk menampilkan daftar email pendownload
+                    var downloadersDiv = document.createElement('div');
+                    downloadersDiv.id = 'downloaders_' + key;
+                    orderDiv.appendChild(downloadersDiv);
+
+                    var deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Hapus';
+                    deleteButton.onclick = function () {
+                        confirmDelete(key);
+                    };
+                    orderDiv.appendChild(deleteButton);
+                    // Tombol untuk menghapus jumlah unduhan
+                    var resetDownloadButton = document.createElement('button');
+                    resetDownloadButton.textContent = 'Reset Jumlah Unduhan';
+                    resetDownloadButton.onclick = function () {
+                        resetDownloadCount(key);
+                    };
+                    orderDiv.appendChild(resetDownloadButton);
+
+                    document.getElementById('displayData').appendChild(orderDiv);
+                }
+
+                dataCount++;
+            });
+
+            var totalPages = Math.ceil(dataCount / ordersPerPage);
+            document.getElementById('pageInfo').innerHTML = "Halaman " + currentPage + " dari " + totalPages;
+            document.getElementById('previousButton').style.display = currentPage === 1 ? 'none' : 'inline-block';
+            document.getElementById('nextButton').style.display = currentPage === totalPages ? 'none' : 'inline-block';
+        }
+
+        function createSeekButtons(mediaElement) {
+            var seekButtonsDiv = document.createElement('div');
+            seekButtonsDiv.className = 'seek-buttons';
+
+            // Input untuk pengaturan detik maju/mundur
+            var seekInput = document.createElement('input');
+            seekInput.type = 'number';
+            seekInput.value = 5; // Default 5 detik
+            seekInput.min = 1; // Minimal 1 detik
+            seekInput.style.width = '50px';
+            seekButtonsDiv.appendChild(seekInput);
+
+            var forwardButton = document.createElement('button');
+            forwardButton.textContent = 'Maju';
+            forwardButton.onclick = function () {
+                mediaElement.currentTime += parseFloat(seekInput.value);
+            };
+            seekButtonsDiv.appendChild(forwardButton);
+
+            var backwardButton = document.createElement('button');
+            backwardButton.textContent = 'Mundur';
+            backwardButton.onclick = function () {
+                mediaElement.currentTime -= parseFloat(seekInput.value);
+            };
+            seekButtonsDiv.appendChild(backwardButton);
+
+            return seekButtonsDiv;
+        }
+
+        function togglePlayPause(mediaElement, playButton) {
+            if (mediaElement.paused || mediaElement.ended) {
+                mediaElement.play();
+                playButton.textContent = 'Pause';
+            } else {
+                mediaElement.pause();
+                playButton.textContent = 'Putar';
+            }
+        }
+
+        function toggleFullScreen(videoElement) {
+            if (videoElement.requestFullscreen) {
+                videoElement.requestFullscreen();
+            } else if (videoElement.mozRequestFullScreen) { // Firefox
+                videoElement.mozRequestFullScreen();
+            } else if (videoElement.webkitRequestFullscreen) { // Chrome, Safari, Opera
+                videoElement.webkitRequestFullscreen();
+            } else if (videoElement.msRequestFullscreen) { // IE/Edge
+                videoElement.msRequestFullscreen();
+            }
+        }
+
+        function stopVideo(videoElement, playButton, stopButton) {
+            videoElement.pause();
+            videoElement.currentTime = 0;
+            playButton.textContent = 'Putar';
+            stopButton.style.display = 'none';
+        }
+
+        function submitOrder(event) {
+            event.preventDefault();
+            var deskripsi = document.getElementById('Deskripsi').value;
+            var fileInput = document.getElementById('fileInput').files[0];
+            var inputLink = document.getElementById('inputLink').value;
+            var fileSoalInput = document.getElementById('fileSoalInput').files[0];
+            var passwordInput = document.getElementById('passwordInput').value;
+
+            if (fileInput) {
+                var storageRef = firebase.storage().ref('pertuni/perpustakaan/excel/' + fileInput.name);
+                storageRef.put(fileInput).then(function(snapshot) {
+                    snapshot.ref.getDownloadURL().then(function(fileURL) {
+                        var orderData = {
+                            deskripsi: deskripsi,
+                            nama_file: fileInput.name,
+                            fileURL: fileURL,
+                            inputLink: inputLink || "",
+                            fileSoalPassword: passwordInput || "",
+                        };
+
+                        if (fileSoalInput) {
+                            var soalStorageRef = firebase.storage().ref('pertuni/perpustakaan/excel/' + fileSoalInput.name);
+                            soalStorageRef.put(fileSoalInput).then(function(soalSnapshot) {
+                                soalSnapshot.ref.getDownloadURL().then(function(fileSoalURL) {
+                                    orderData.fileSoalURL = fileSoalURL;
+                                    ordersRef.push(orderData);
+                                });
+                            });
+                        } else {
+                            ordersRef.push(orderData);
+                        }
+                    });
+                });
+            }
+        }
+
+        function confirmDelete(key) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                ordersRef.child(key).remove();
+            }
+        }
+        
+        function resetDownloadCount(key) {
+    var confirmed = confirm("Apakah Anda yakin ingin mereset jumlah unduhan?");
+    if (confirmed) {
+        ordersRef.child(key).update({
+            downloadCount: 0
+        }).then(function() {
+            console.log("Jumlah unduhan berhasil direset.");
+            var downloadCountElement = document.querySelector("#" + key + " p:nth-of-type(4)");
+            if (downloadCountElement) {
+                downloadCountElement.textContent = "Jumlah Unduhan: 0";
+            }
+        }).catch(function(error) {
+            console.error("Gagal mereset jumlah unduhan:", error);
+        });
+    }
+        }
+        
+        function deleteAllOrders() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
+                ordersRef.remove();
+            }
+        }
+
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                document.getElementById('userEmail').textContent = 'User: ' + user.email;
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

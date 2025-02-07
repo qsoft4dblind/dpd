@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Perpustakaan</title>
+    <style>
+      body {
+        background-image: url('planet.gif');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        font-family: Arial, sans-serif;
+        color: #333;
+      }
+      .menu-container {
+        position: relative;
+        z-index: 1;
+        padding: 20px;
+        text-align: center;
+        margin-top: 50px;
+      }
+      .menu-item, .menu-button {
+        display: inline-block;
+        margin: 10px;
+        padding: 15px 30px;
+        background-color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-decoration: none;
+        color: #333;
+        border: none;
+      }
+      .menu-item:hover, .menu-button:hover {
+        background-color: #f0f0f0;
+      }
+      .back-button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .back-button:hover {
+        background-color: #3e8e41;
+      }
+      .submenu-container {
+        display: none;
+        margin-top: 20px;
+      }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <div id="main-menu">
+            <button class="menu-button" id="pengetahuan-button">Pengetahuan</button>
+            <div id="pengetahuan-menu" class="submenu-container">
+                <a href="1.admin umum.html" class="menu-item">Pengetahuan Umum</a>
+                <a href="2.admin agama.html" class="menu-item">Pengetahuan Agama</a>
+            </div>
+            <button class="menu-button" id="aplikasi-button">Aplikasi</button>
+            <div id="aplikasi-menu" class="submenu-container">
+                <a href="3.admin hand phone.html" class="menu-item">Hand Phone</a>
+                <a href="4.admin komputer.html" class="menu-item">Komputer</a>
+            </div>
+        </div>
+    </div>
+    <button class="back-button" onclick="window.location.href='perpus komputer.html'">Kembali</button>
+
+    <script>
+      const pengetahuanButton = document.getElementById('pengetahuan-button');
+      const aplikasiButton = document.getElementById('aplikasi-button');
+      const pengetahuanMenu = document.getElementById('pengetahuan-menu');
+      const aplikasiMenu = document.getElementById('aplikasi-menu');
+
+      pengetahuanButton.addEventListener('click', function() {
+        pengetahuanMenu.style.display = pengetahuanMenu.style.display === 'block' ? 'none' : 'block';
+        aplikasiMenu.style.display = 'none'; // Hide aplikasi menu
+      });
+
+      aplikasiButton.addEventListener('click', function() {
+        aplikasiMenu.style.display = aplikasiMenu.style.display === 'block' ? 'none' : 'block';
+        pengetahuanMenu.style.display = 'none'; // Hide pengetahuan menu
+      });
+    </script>
+</body>
+</html>

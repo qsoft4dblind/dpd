@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Pesan Firebase</title>
+</head>
+
+<body>
+    <h2>Kirim Pesan</h2>
+
+    <!-- Form untuk mengirim pesan teks -->
+    <form id="messageForm">
+        <label for="message">Pesan Teks:</label><br>
+        <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+
+        <!-- Tombol untuk rekam suara -->
+        <div id="voiceRecorder">
+            <button id="recordButton">Rekam Suara</button>
+            <button id="stopButton" style="display: none;">Berhenti Rekam</button>
+        </div><br>
+
+        <!-- Input untuk mengirim lampiran -->
+        <input type="file" id="fileInput" /><br><br>
+
+        <!-- Tombol untuk mengirim pesan -->
+        <button type="submit">Kirim Pesan</button>
+    </form>
+
+    <button id="deleteAllMessages">Hapus Semua Pesan</button>
+
+    <h3>Hasil Pengiriman</h3>
+    <div id="result"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        var dbRef = firebase.database().ref('pertuni/perpustakaan');
+        var storageRef = firebase.storage().ref('pertuni/perpustakaan/pesan');
+        var mediaRecorder;
+        var audioChunks = [];
+
+        // Mengambil nama pengguna dan email
+        function getUserData(uid) {
+            return dbRef.child('pengguna').child(uid).once('value').then(function(snapshot) {
+                return snapshot.val();
+            });
+        }
+
+        // Kirim data form ke Firebase
+        document.getElementById('messageForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var user = firebase.auth().currentUser;
+            var message = document.getElementById('message').value;
+            var fileInput = document.getElementById('fileInput').files[0];
+
+            if (user) {
+                getUserData(user.uid).then(function (userData) {
+                    var userName = userData.nama;
+                    var userEmail = userData.email;
+                    var timestamp = new Date().toLocaleString();
+                    var newMessageRef = dbRef.child('orders').push();
+
+                    // Jika ada teks yang dikirim
+                    if (message) {
+                        newMessageRef.set({
+                            waktu_pengiriman: timestamp,
+                            nama_pengguna: userName,
+                            email: userEmail,
+                            pesan: message,
+                            tipe: 'teks'
+                        });
+                    }
+
+                    // Jika ada file yang diunggah
+                    if (fileInput) {
+                        var fileName = fileInput.name;
+                        var fileRef = storageRef.child(fileName);
+
+                        fileRef.put(fileInput).then(function (snapshot) {
+                            snapshot.ref.getDownloadURL().then(function (fileURL) {
+                                var fileData = {
+                                    waktu_pengiriman: timestamp,
+                                    nama_pengguna: userName,
+                                    email: userEmail,
+                                    tipe: 'lampiran',
+                                    nama_file: fileName,
+                                    fileURL: fileURL
+                                };
+                                newMessageRef.set(fileData);
+                                loadMessages();
+                            });
+                        });
+                    }
+                    loadMessages();
+                    document.getElementById('messageForm').reset();
+                });
+            } else {
+                alert("Anda harus login terlebih dahulu!");
+            }
+        });
+
+        // Memulai rekaman suara
+        document.getElementById('recordButton').addEventListener('click', function () {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+                document.getElementById('recordButton').style.display = 'none';
+                document.getElementById('stopButton').style.display = 'block';
+
+                mediaRecorder.ondataavailable = function (event) {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = function () {
+                    var audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    var fileName = 'voice_' + new Date().toISOString() + '.webm';
+                    var user = firebase.auth().currentUser;
+
+                    if (user) {
+                        getUserData(user.uid).then(function (userData) {
+                            var userName = userData.nama;
+                            var userEmail = userData.email;
+                            var timestamp = new Date().toLocaleString();
+                            var newMessageRef = dbRef.child('orders').push();
+
+                            var fileRef = storageRef.child(fileName);
+                            fileRef.put(audioBlob).then(function (snapshot) {
+                                snapshot.ref.getDownloadURL().then(function (fileURL) {
+                                    var fileData = {
+                                        waktu_pengiriman: timestamp,
+                                        nama_pengguna: userName,
+                                        email: userEmail,
+                                        tipe: 'suara',
+                                        fileURL: fileURL
+                                    };
+                                    newMessageRef.set(fileData);
+                                    loadMessages();
+                                    audioChunks = [];
+                                });
+                            });
+                        });
+                    } else {
+                        alert("Anda harus login terlebih dahulu!");
+                    }
+                    document.getElementById('recordButton').style.display = 'block';
+                    document.getElementById('stopButton').style.display = 'none';
+                };
+            });
+        });
+
+        // Berhenti merekam suara
+        document.getElementById('stopButton').addEventListener('click', function () {
+            if (mediaRecorder) {
+                mediaRecorder.stop();
+            }
+        });
+
+        // Fungsi untuk memuat dan menampilkan pesan
+        function loadMessages() {
+            dbRef.child('orders').on('value', function (snapshot) {
+                var resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+                snapshot.forEach(function (childSnapshot) {
+                    var messageData = childSnapshot.val();
+                    var messageHTML = `
+                        <div>
+                            <p><strong>Waktu:</strong> ${messageData.waktu_pengiriman}</p>
+                            <p><strong>Nama Pengguna:</strong> ${messageData.nama_pengguna}</p>
+                            <p><strong>Email:</strong> ${messageData.email}</p>`;
+
+                    if (messageData.tipe === 'teks') {
+                        messageHTML += `<p><strong>Pesan:</strong> ${messageData.pesan}</p>`;
+                    } else if (messageData.tipe === 'lampiran') {
+                        messageHTML += `<a href="${messageData.fileURL}" target="_blank">${messageData.nama_file}</a>`;
+                    } else if (messageData.tipe === 'suara') {
+                        messageHTML += `<audio controls src="${messageData.fileURL}"></audio>`;
+                    }
+
+                    resultDiv.innerHTML += messageHTML + '</div>';
+                });
+            });
+        }
+
+        // Memuat pesan saat halaman dimuat
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+                loadMessages();
+            }
+        });
+
+        // Menghapus semua pesan
+        document.getElementById('deleteAllMessages').addEventListener('click', function () {
+            if (confirm('Apakah Anda yakin ingin menghapus semua pesan?')) {
+                dbRef.child('orders').remove().then(function () {
+                    alert("Semua pesan berhasil dihapus!");
+                    loadMessages();
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

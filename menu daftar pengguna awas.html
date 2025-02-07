@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Pengguna</title>
+    <style>
+        .pengguna-container {
+            width: 100%;
+            margin: 20px 0;
+            border: 1px solid black;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .pengguna-container:not(:last-child) {
+            margin-bottom: 10px;
+        }
+
+        .pengguna-detail {
+            margin-bottom: 5px;
+        }
+
+        .hapusBtn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .hapusBtn:hover {
+            background-color: #d32f2f;
+        }
+
+        .pagination-btn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Daftar Pengguna</h1>
+<a href="menu daftar online.html">Daftar Pengguna Online</a>    
+<br>      
+<br>
+<button id="hapusSemuaBtn">Hapus Semua Data</button>
+<br>
+<p id="totalPengguna">Total Pengguna: 0</p> <!-- Element for displaying total users -->
+</div>
+
+<div class="pagination-btn">
+    <button id="prevBtn">Sebelumnya</button><br>
+    <button id="nextBtn">Selanjutnya</button><br>
+    <span id="currentPage">1</span> dari <span id="totalPages">0</span><br>
+
+</div>
+
+<!-- Section to display online users -->
+<div id="penggunaOnlineSection" style="display:none;">
+    <p id="totalPenggunaOnline">Total Pengguna Online: 0</p>
+    <div id="penggunaOnlineList">
+        <!-- List of online users will be inserted here -->
+    </div>
+</div>
+
+<div id="penggunaList">
+    <!-- Data will be inserted here -->
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script>
+    // Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+        authDomain: "dpd-pertuni.firebaseapp.com",
+        databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "dpd-pertuni",
+        storageBucket: "dpd-pertuni.appspot.com",
+        messagingSenderId: "253614860627",
+        appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+        measurementId: "G-6J7XZB9R8K"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    let users = [];
+    let currentPage = 1;
+    let usersPerPage = 1;  // Adjusted users per page for better testing
+
+    function displayUser(userData, counter) {
+        const penggunaContainer = document.createElement("div");
+        penggunaContainer.className = "pengguna-container";
+
+        const onlineStatus = userData.status ? (userData.status.online ? "Online" : "Offline") : "Offline";
+
+        const lastOnline = userData.status && userData.status.online === false && userData.status.lastOnline ? 
+            formatIndonesiaTime(new Date(userData.status.lastOnline)) : ""; // Only show lastOnline if offline
+
+        penggunaContainer.innerHTML = ` 
+            <p class="pengguna-detail"><strong>No:</strong> ${counter}</p>
+            <p class="pengguna-detail"><strong>Nama:</strong> ${userData.nama}</p>
+            <p class="pengguna-detail"><strong>Alamat:</strong> ${userData.alamat}</p>
+            <p class="pengguna-detail"><strong>Nomor Telepon:</strong> ${userData.nomor_telepon}</p>
+            <p class="pengguna-detail"><strong>Email:</strong> ${userData.email}</p>
+            <p class="pengguna-detail"><strong>Status:</strong> ${onlineStatus}</p>
+            ${onlineStatus === "Offline" ? `<p class="pengguna-detail"><strong>Waktu Terakhir:</strong> ${lastOnline}</p>` : ""}
+            <button data-id="${userData.userId}" class="hapusBtn">Hapus</button>
+        `;
+
+        return penggunaContainer;
+    }
+
+    // Function to setup delete buttons
+    function setupDeleteButtons() {
+        const hapusButtons = document.querySelectorAll(".hapusBtn");
+        
+        hapusButtons.forEach(button => {
+            button.addEventListener("click", (event) => {
+                const userId = event.target.getAttribute("data-id");
+
+                // Konfirmasi penghapusan
+                if (confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) {
+                    // Hapus data pengguna dari Firebase
+                    firebase.database().ref('pertuni/perpustakaan/melihat/awas/' + userId).remove()
+                        .then(() => {
+                            alert("Pengguna berhasil dihapus.");
+                            // Hapus pengguna dari array dan perbarui tampilan
+                            users = users.filter(user => user.userId !== userId);
+                            loadUsers();
+                        })
+                        .catch((error) => {
+                            console.error("Error removing user: ", error);
+                        });
+                }
+            });
+        });
+    }
+
+    function loadUsers() {
+        const penggunaList = document.querySelector("#penggunaList");
+        const totalPengguna = document.getElementById("totalPengguna");
+
+        // Clear the current list of users
+        penggunaList.innerHTML = '';
+
+        // Display the current user
+        const start = (currentPage - 1) * usersPerPage;
+        const end = start + usersPerPage;
+        const currentUsers = users.slice(start, end);
+
+        currentUsers.forEach((user, index) => {
+            const penggunaContainer = displayUser(user, start + index + 1);
+            penggunaList.appendChild(penggunaContainer);
+        });
+
+        // Setup delete buttons after rendering the users
+        setupDeleteButtons();
+
+        // Update the current page and total page numbers
+        document.getElementById("currentPage").innerText = currentPage;
+        document.getElementById("totalPages").innerText = Math.ceil(users.length / usersPerPage);
+
+        // Enable/Disable buttons based on current page
+        document.getElementById("prevBtn").disabled = currentPage === 1;
+        document.getElementById("nextBtn").disabled = currentPage === Math.ceil(users.length / usersPerPage);
+
+        // Update the total number of users
+        totalPengguna.innerText = `Total Pengguna: ${users.length}`;
+    }
+
+    // Firebase reference to fetch user data
+    const penggunaRef = firebase.database().ref('pertuni/perpustakaan/melihat/awas');
+
+    penggunaRef.once('value', (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+            const userData = childSnapshot.val();
+            userData.userId = childSnapshot.key; // Simpan userId untuk keperluan penghapusan
+            users.push(userData);  // Store all users
+        });
+
+        // Display total number of users
+        document.getElementById("totalPengguna").innerText = `Total Pengguna: ${users.length}`;
+
+        // Initial load of users
+        loadUsers();
+    });
+
+    // Handle previous and next buttons
+    document.getElementById("prevBtn").addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadUsers();
+        }
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+        if (currentPage < Math.ceil(users.length / usersPerPage)) {
+            currentPage++;
+            loadUsers();
+        }
+    });
+
+    // Function to format the time
+    function formatIndonesiaTime(date) {
+        return date.toLocaleString('id-ID', { 
+            timeZone: 'Asia/Jakarta', 
+            hour12: false, // Use 24-hour format
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric'
+        });
+    }
+</script>
+<button class="back-button" onclick="window.location.href='menu admin hardian.html'">Kembali</button>
+
+</body>
+</html>

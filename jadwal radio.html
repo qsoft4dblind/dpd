@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('awan.gif'); /* Menambahkan latar belakang animasi */
+            background-size: cover; /* Membuat gambar latar belakang menutupi seluruh layar */
+            background-position: center; /* Menempatkan gambar di tengah */
+            background-attachment: fixed; /* Gambar latar belakang tetap saat menggulir halaman */
+            color: #000080; /* Warna tulisan biru tua */
+        }
+
+        .form-container {
+            margin: 20px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5); /* Membuat latar belakang form transparan */
+            border-radius: 8px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .data-list {
+            margin-top: 20px;
+        }
+
+        .data-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            color: black; /* Teks dalam data-item menjadi hitam */
+        }
+
+        .data-item a {
+            text-decoration: none;
+            color: #007BFF;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .data-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsif - menyesuaikan dengan lebar layar */
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 15px;
+            }
+
+            input[type="text"], button {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .data-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .data-item a {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 10px;
+            }
+
+            input[type="text"], button {
+                font-size: 12px;
+                padding: 10px;
+            }
+
+            .data-item {
+                padding: 10px;
+            }
+
+            .data-item a {
+                font-size: 12px;
+            }
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+            authDomain: "dpd-pertuni.firebaseapp.com",
+            databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dpd-pertuni",
+            storageBucket: "dpd-pertuni.appspot.com",
+            messagingSenderId: "253614860627",
+            appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+            measurementId: "G-6J7XZB9R8K"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref("pertuni/perpustakaan/menu/radio");
+
+        function submitData() {
+            const menuHtml = document.getElementById("menuHtml").value.trim();
+            if (!menuHtml) return;
+
+            // Parse the data from the input
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = menuHtml;
+            const linkElement = tempDiv.querySelector("a");
+            if (!linkElement) {
+                alert("Harap masukkan tag <a> yang valid.");
+                return;
+            }
+
+            const newData = {
+                menu: linkElement.textContent.trim(),
+                link: linkElement.getAttribute("href"),
+                status: "Tidak Ditampilkan"  // Default status
+            };
+
+            db.push(newData).then(() => {
+                document.getElementById("menuHtml").value = "";
+                fetchData();
+            });
+        }
+
+        function fetchData() {
+            const dataList = document.getElementById("dataList");
+            dataList.innerHTML = ""; // Reset data list
+
+            db.on("value", snapshot => {
+                snapshot.forEach(childSnapshot => {
+                    const key = childSnapshot.key;
+                    const data = childSnapshot.val();
+
+                    const item = document.createElement("div");
+                    item.className = "data-item";
+
+                    const link = document.createElement("a");
+                    link.href = data.link;
+                    link.target = "_blank";
+                    link.innerText = data.menu;
+
+                    // Menyembunyikan link jika status adalah "Tidak Ditampilkan"
+                    if (data.status === "Tidak Ditampilkan") {
+                        link.style.display = "none"; // Sembunyikan link
+                    } else {
+                        link.style.display = "inline"; // Tampilkan link
+                    }
+
+                    // Menambahkan elemen link ke dalam item
+                    item.appendChild(link);
+
+                    // Menambahkan item ke dalam data list
+                    dataList.appendChild(item);
+                });
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchData);
+    </script>
+</head>
+<body>
+    <div class="data-list" id="dataList">
+        <!-- Data hasil akan ditampilkan di sini -->
+    </div>
+    <button class="back-button" onclick="window.location.href='sosialmedia.html'">Kembali</button>
+</body>
+</html>

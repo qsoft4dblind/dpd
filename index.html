@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles/style.css">
+    <title>Aplikasi DPD Pertuni Jambi</title>
+</head>
+<body>
+    
+    <div class="container">Loading</div>
+
+    <!-- FIREBASE WAJIB -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    
+    <!-- FIREBASE PILIHAN -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script src="script.js"></script>
+    <script src="scriptnon.html"></script>
+      
+</head>
+  <body>
+    <audio id="myAudio">
+      <source src="muqaddimah dpd.wav" type="audio/wav">
+    </audio>
+    <script>
+      window.onload = function() {
+        var audio = document.getElementById("myAudio");
+        audio.autoplay = true;
+        audio.load();
+      }
+    </script>  
+      <head>
+        <title>Jam (Aktif) With JavaScript</title>
+    </head>
+    <body>
+        <!-- Menampilkan Jam (Aktif) -->
+        <div id="clock"></div>
+            <script type="text/javascript">
+            function showTime() {
+                var a_p = "";
+                var today = new Date();
+                var curr_hour = today.getHours();
+                var curr_minute = today.getMinutes();
+                var curr_second = today.getSeconds();
+                if (curr_hour < 12) {
+                    a_p = "AM";
+                } else {
+                    a_p = "PM";
+                }
+                if (curr_hour == 0) {
+                    curr_hour = 12;
+                }
+                if (curr_hour > 12) {
+                    curr_hour = curr_hour - 12;
+                }
+                curr_hour = checkTime(curr_hour);
+                curr_minute = checkTime(curr_minute);
+                curr_second = checkTime(curr_second);
+             document.getElementById('clock').innerHTML=curr_hour + ":" + curr_minute + ":" + curr_second + " " + a_p;
+                }
+    
+            function checkTime(i) {
+                if (i < 10) {
+                    i = "0" + i;
+                }
+                return i;
+            }
+            setInterval(showTime, 500);
+            //-->
+            </script>
+    
+            <!-- Menampilkan Hari, Bulan dan Tahun -->
+            <br>
+            <script type='text/javascript'>
+                <!--
+                var months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                var myDays = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum&#39;at', 'Sabtu'];
+                var date = new Date();
+                var day = date.getDate();
+                var month = date.getMonth();
+                var thisDay = date.getDay(),
+                    thisDay = myDays[thisDay];
+                var yy = date.getYear();
+                var year = (yy < 1000) ? yy + 1900 : yy;
+                document.write(thisDay + ', ' + day + ' ' + months[month] + ' ' + year);
+                //-->
+            </script>
+
+
+</body>
+</html>
+    		

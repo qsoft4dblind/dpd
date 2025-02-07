@@ -1,0 +1,50 @@
+const container = document.querySelector(".container");
+
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        dashboard(user);
+    } else {
+        landing();
+    }
+});
+
+const landing = () => {
+    const elementUID = document.createElement("div");
+    elementUID.classList.add("user-id");
+    elementUID.setAttribute("data-firebase", "uid");
+    elementUID.innerHTML = (`Selamat Datang! Silakan Login`);
+
+    const elementButton = document.createElement("button");
+    elementButton.classList.add("login");
+    elementButton.setAttribute("data-button", "login-btn");
+    elementButton.innerHTML = (`Login Sekarang`);
+
+    elementButton.onclick = () => {
+        firebase.auth().signInAnonymously()
+        .catch((error) => {
+            console.log(error);
+        });
+    }
+
+    container.innerHTML = ``;
+    container.appendChild(elementUID);
+    container.appendChild(elementButton);
+}
+const dashboard = (user) => {
+    const elementUID = document.createElement("div");
+    elementUID.classList.add("user-id");
+    elementUID.setAttribute("data-firebase", "uid");
+    elementUID.innerHTML = user.uid;
+
+    const elementButton = document.createElement("button");
+    elementButton.classList.add("login");
+    elementButton.setAttribute("data-button", "logout-btn");
+    elementButton.innerHTML = (`Keluar Dari Akun`);
+    elementButton.onclick = () => {
+        firebase.auth().signOut();
+    }
+    
+    container.innerHTML = ``;
+    container.appendChild(elementUID);
+    container.appendChild(elementButton);
+}

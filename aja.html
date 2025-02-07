@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download File DPD Pertuni Jambi</title>
+    <link rel="stylesheet" type="text/css" href="gaya tulisan.css">
+</head>
+<body>
+    <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni"> <!-- Remove width attribute to allow automatic resizing -->
+    <header>
+        <h1>Download File DPD Pertuni Jambi</h1>
+        <p>Silahkan Pilih format file yang ingin Anda unduh:</p>
+
+        <!-- Format options -->
+        <input type="checkbox" id="xlsxCheckbox" value="xlsx" onchange="updateDownloadLink()"> Excel (.xlsx)<br>
+        <input type="checkbox" id="pdfCheckbox" value="pdf" onchange="updateDownloadLink()"> PDF (.pdf)<br>
+        <input type="checkbox" id="csvCheckbox" value="csv" onchange="updateDownloadLink()"> CSV (.csv)<br>
+
+        <p>Silahkan Pilih file yang ingin Anda unduh:</p>
+
+        <!-- File options -->
+        <input type="checkbox" id="completeDataCheckbox" value="complete" onchange="updateDownloadLink()"> Download data lengkap DPD<br>
+        <input type="checkbox" id="dpcJambiCheckbox" value="jambi" onchange="updateDownloadLink()"> Download data DPC Kota Jambi<br>
+        <input type="checkbox" id="sungaiPenuhCheckbox" value="sungaipenuh" onchange="updateDownloadLink()"> Download DPC Kota Sungai Penuh<br>
+        <input type="checkbox" id="meranginCheckbox" value="merangin" onchange="updateDownloadLink()"> Download DPC Merangin<br>
+        <input type="checkbox" id="bungoCheckbox" value="bungo" onchange="updateDownloadLink()"> Download DPC Muaro Bungo<br>
+        <input type="checkbox" id="teboCheckbox" value="tebo" onchange="updateDownloadLink()"> Download DPC Tebo<br>
+        <input type="checkbox" id="kerinciCheckbox" value="kerinci" onchange="updateDownloadLink()"> Download DPC Kerinci<br>
+        <input type="checkbox" id="batanghariCheckbox" value="batanghari" onchange="updateDownloadLink()"> Download DPC Batanghari<br>
+        <input type="checkbox" id="muaroJambiCheckbox" value="muarojambi" onchange="updateDownloadLink()"> Download DPC Muaro Jambi<br>
+        <input type="checkbox" id="sarolangunCheckbox" value="sarolangun" onchange="updateDownloadLink()"> Download DPC Sarolangun<br>
+        <input type="checkbox" id="tanjabBaratCheckbox" value="tanjabbarat" onchange="updateDownloadLink()"> Download DPC Tanjung Jabung Barat<br>
+        <input type="checkbox" id="tanjabTimurCheckbox" value="tanjabtimur" onchange="updateDownloadLink()"> Download DPC Tanjung Jabung Timur<br>
+
+        <!-- Download button -->
+        <button onclick="downloadSpreadsheet()">Download</button>
+        <button class="back-button" onclick="window.location.href='menu download.html'">Kembali</button>
+
+        <!-- Hidden link element to dynamically update the download link -->
+        <a id="downloadLink" style="display: none;" href="" download=""></a>
+
+        <script>
+            function updateDownloadLink() {
+                var selectedFormats = [];
+                if (document.getElementById("xlsxCheckbox").checked) {
+                    selectedFormats.push("xlsx");
+                }
+                if (document.getElementById("pdfCheckbox").checked) {
+                    selectedFormats.push("pdf");
+                }
+                if (document.getElementById("csvCheckbox").checked) {
+                    selectedFormats.push("csv");
+                }
+
+                var selectedFiles = [];
+                if (document.getElementById("completeDataCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1to_RPGuQaSfXbdvk9lDiYTY6ammm2hEZ-ulBwSuEgGk",
+                        name: "Download data lengkap DPD"
+                    });
+                }
+                if (document.getElementById("dpcJambiCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1aHIqAMknbefisMe678yf5nYRwk1L8pSDExT5guU_Ifk",
+                        name: "Download data DPC Kota Jambi"
+                    });
+                }
+                if (document.getElementById("sungaiPenuhCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1jAXCMmhxEoIOKB1oVreOiFLRziiEWoS0vC4CMpzeAUE",
+                        name: "Download DPC Kota Sungai Penuh"
+                    });
+                }
+                if (document.getElementById("meranginCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1rluQ-7q15JO5IX1GK6jVyDWctwS1M5lIaTb-RLg0BIk",
+                        name: "Download DPC Merangin"
+                    });
+                }
+                if (document.getElementById("bungoCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1llqiEOkryl8h3pRbTNczHfdVeIydG8sIk1n8iYF4TUw",
+                        name: "Download DPC Muaro Bungo"
+                    });
+                }
+                if (document.getElementById("teboCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1r_Y_-jguHCTKpszcPu9DY9OJgcYDmZMXSroMK4IDaLw",
+                        name: "Download DPC Tebo"
+                    });
+                }
+                if (document.getElementById("kerinciCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1sKWPfS0zo6VRxs662BtXNT1WP1SAugDlOCdl27Y1weU",
+                        name: "Download DPC Kerinci"
+                    });
+                }
+                if (document.getElementById("batanghariCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1tD710WRXL-J8ueQImPC5RS3BYrQ5vWOfGEpnd35gbiI",
+                        name: "Download DPC Batanghari"
+                    });
+                }
+                if (document.getElementById("muaroJambiCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1QwFg2-MKcVVHOURrq894vwSqxha3dJ7qyrOR0ORwpHQ",
+                        name: "Download DPC Muaro Jambi"
+                    });
+                }
+                if (document.getElementById("sarolangunCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1M4AB2sHc2wON5V7VdwH1hyhw9KRoYsF7skgPyjt7Fwk",
+                        name: "Download DPC Sarolangun"
+                    });
+                }
+                if (document.getElementById("tanjabBaratCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1pcY12_5vR5NkAl5OA-Rk14X_8qUSBTospU3Ew7Ii7_g",
+                        name: "Download DPC Tanjung Jabung Barat"
+                    });
+                }
+                if (document.getElementById("tanjabTimurCheckbox").checked) {
+                    selectedFiles.push({
+                        file: "1XSsrV6Sep8uP26VAxjz4PxQwvBYSP-DG5i66d0N-rLc",
+                        name: "Download DPC Tanjung Jabung Timur"
+                    });
+                }
+
+                var downloadLink = document.getElementById("downloadLink");
+                if (selectedFormats.length > 0 && selectedFiles.length > 0) {
+                    var combinedLinks = [];
+                    selectedFormats.forEach(function(format) {
+                        selectedFiles.forEach(function(fileData) {
+                            combinedLinks.push("https://docs.google.com/spreadsheets/d/" + fileData.file + "/export?format=" + format);
+                        });
+                    });
+                    downloadLink.href = combinedLinks.join('\n');
+                    downloadLink.download = "spreadsheet.zip"; // Change this name as required
+                } else {
+                    downloadLink.href = "";
+                    downloadLink.download = "";
+                }
+            }
+
+            function downloadSpreadsheet() {
+                var downloadLink = document.getElementById("downloadLink");
+                if (downloadLink.href !== "") {
+                    downloadLink.click();
+                } else {
+                    alert("Pilih setidaknya satu format file dan satu file untuk diunduh.");
+                }
+            }
+        </script>
+    </header>
+</body>
+</html>

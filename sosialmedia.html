@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #fff; /* Background putih */
+        color: #003366; /* Warna teks biru tua */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: justify; /* Teks rata kiri dan kanan */
+      }
+      
+      .menu-container {
+        text-align: justify; /* Teks rata kiri dan kanan */
+        background-color: #fff; /* Background putih */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 90%; /* Responsif pada perangkat kecil */
+      }
+
+      a.menu-item {
+        color: #003366; /* Warna teks biru tua */
+        text-decoration: none;
+        font-size: 18px;
+        display: block; /* Agar tautan menjadi blok dan rata kiri-kanan */
+        margin-bottom: 10px; /* Spasi antar elemen */
+      }
+
+      button {
+        background-color: #003366; /* Background tombol biru tua */
+        color: #fff; /* Warna teks tombol putih */
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 10px; /* Spasi antar tombol */
+      }
+
+      button:hover {
+        background-color: #00509e; /* Warna tombol saat di-hover */
+      }
+
+      .back-button {
+        background-color: #cc0000; /* Warna tombol kembali merah */
+      }
+
+      .back-button:hover {
+        background-color: #990000; /* Warna tombol kembali saat di-hover */
+      }
+
+      @media (max-width: 600px) {
+        .menu-container {
+          width: 100%;
+          padding: 15px;
+        }
+
+        a.menu-item {
+          font-size: 16px;
+        }
+
+        button {
+          font-size: 14px;
+          padding: 8px 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-container">
+      <a href="https://youtube.com/@dpdpertunijambi2174" target="_blank" class="menu-item">Youtube DPD Pertuni Jambi</a>
+      Jangan Lupa Subscribe, Like, and Comment. <br><br>
+      <button onclick="window.location.href='https://youtube.com/@dpdpertunijambi2174?sub_confirmation=1'">Subscribe</button><br><br>
+      <a href="https://www.instagram.com/dpdpertunijambi?utm_source=qr&igsh=OTAwczM3bW04Y2d2" target="_blank" class="menu-item">Instagram DPD Pertuni Jambi</a><br>
+      <a href="https://vm.tiktok.com/ZMrdR2B4Y" target="_blank" class="menu-item">Tiktok DPD Pertuni Jambi</a><br><br>
+      <a href="https://www.facebook.com/share/p/1Eebbbqadz/" target="_blank" class="menu-item">Facebook DPD Pertuni Jambi</a><br><br>
+      <button onclick="window.location.href='komunitas.html'">What'sapp</button><br><br>
+      <button onclick="window.location.href='jadwal radio.html'">Radio Pertuni Jambi</button><br><br>
+      <a href="mailto:pertunijambi21@gmail.com" target="_blank" class="menu-item">Gmail DPD Pertuni Jambi</a><br>
+      <a href="https://DPD-pertuni-jambi.blogspot.com" target="_blank" class="menu-item">Blog DPD Pertuni Jambi</a><br>
+      <a href="https://meet.google.com/tca-yowg-kru" target="_blank" class="menu-item">Meet Pengurus dan Anggota</a><br>
+      <button class="back-button" onclick="window.location.href='sosialtatatertib.html'">Kembali</button>
+    </div>
+  </body>
+</html>

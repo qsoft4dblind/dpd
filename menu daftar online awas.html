@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Pengguna Online</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .user-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .user-list li {
+            background-color: #f9f9f9;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+
+        .back-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Daftar Pengguna Online</h1>
+<p id="totalPenggunaOnline">Total Pengguna Online: 0</p>
+<ul id="penggunaOnlineList" class="user-list">
+    <!-- List of online users will be inserted here -->
+</ul>
+
+<button class="back-button" onclick="window.location.href='menu daftar pengguna awas.html'">Kembali</button>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script>
+    // Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+        authDomain: "dpd-pertuni.firebaseapp.com",
+        databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "dpd-pertuni",
+        storageBucket: "dpd-pertuni.appspot.com",
+        messagingSenderId: "253614860627",
+        appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+        measurementId: "G-6J7XZB9R8K"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Function to load and display online users in real-time
+    function loadOnlineUsers() {
+        const penggunaOnlineList = document.getElementById('penggunaOnlineList');
+        const totalPenggunaOnline = document.getElementById('totalPenggunaOnline');
+        
+        // Real-time listener on the online users
+        firebase.database().ref('pertuni/perpustakaan/melihat/awas').on('value', (snapshot) => {
+            let onlineUsersCount = 0;
+            penggunaOnlineList.innerHTML = ''; // Clear previous list
+
+            snapshot.forEach((childSnapshot) => {
+                const userData = childSnapshot.val();
+                if (userData.status && userData.status.online) {
+                    onlineUsersCount++;
+                    const userName = userData.nama;
+
+                    const penggunaOnlineItem = document.createElement("li");
+                    penggunaOnlineItem.textContent = `${onlineUsersCount}. ${userName}`;
+                    penggunaOnlineList.appendChild(penggunaOnlineItem);
+                }
+            });
+
+            // Update total number of online users
+            totalPenggunaOnline.innerText = `Total Pengguna Online: ${onlineUsersCount}`;
+        });
+    }
+
+    // Load online users when the page loads
+    window.onload = loadOnlineUsers;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download File DPD Pertuni Jambi</title>
+    <link rel="stylesheet" type="text/css" href="gaya tulisan.css">
+</head>
+<body>
+    <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni"> <!-- Remove width attribute to allow automatic resizing -->
+        <header>  
+
+    <h1>Download File DPD Pertuni Jambi</h1>
+
+    <p>Silahkan Pilih format file yang ingin Anda unduh:</p>
+
+    <input type="checkbox" id="xlsxCheckbox" value="xlsx" onchange="updateDownloadLink()"> Excel (.xlsx)<br>
+    <input type="checkbox" id="pdfCheckbox" value="pdf" onchange="updateDownloadLink()"> PDF (.pdf)<br>
+    <input type="checkbox" id="csvCheckbox" value="csv" onchange="updateDownloadLink()"> CSV (.csv)<br>
+
+    <p>Silahkan Pilih file yang ingin Anda unduh:</p>
+
+    <input type="checkbox" id="databaseCheckbox" value="1" onchange="updateDownloadLink()"> Database DPD<br>
+    <input type="checkbox" id="kegiatanCheckbox" value="2" onchange="updateDownloadLink()"> Pendaftaran Kegiatan DPD Pertuni Jambi<br>
+
+    <button onclick="downloadSpreadsheet()">Download</button>
+    <button class="back-button" onclick="window.location.href='admin aja.html'">Kembali</button>
+
+    <!-- Hidden link element to dynamically update the download link -->
+    <a id="downloadLink" style="display: none;" href="" download=""></a>
+
+    <script>
+        function updateDownloadLink() {
+            var selectedFormats = [];
+            if (document.getElementById("xlsxCheckbox").checked) {
+                selectedFormats.push("xlsx");
+            }
+            if (document.getElementById("pdfCheckbox").checked) {
+                selectedFormats.push("pdf");
+            }
+            if (document.getElementById("csvCheckbox").checked) {
+                selectedFormats.push("csv");
+            }
+
+            var selectedFiles = [];
+            if (document.getElementById("databaseCheckbox").checked) {
+                selectedFiles.push("1");
+            }
+            if (document.getElementById("kegiatanCheckbox").checked) {
+                selectedFiles.push("2");
+            }
+
+            var downloadLink = document.getElementById("downloadLink");
+            if (selectedFormats.length > 0 && selectedFiles.length > 0) {
+                var combinedLinks = [];
+                selectedFormats.forEach(function(format) {
+                    selectedFiles.forEach(function(file) {
+                        var sheetId;
+                        switch (file) {
+                            case "1":
+                                sheetId = "1AKiihA2_LBNU1wlBrczoEyB77UzeLF5G3vZzL542E7E";
+                                break;
+                            case "2":
+                                sheetId = "12NdqgHAO5RjIGFOPsRdj34ZZHoeYh5LMlEIww-xtGYE";
+                                break;
+                            default:
+                                // Handle default case
+                                break;
+                        }
+                        combinedLinks.push("https://docs.google.com/spreadsheets/d/" + sheetId + "/export?format=" + format);
+                    });
+                });
+                downloadLink.href = combinedLinks.join('\n');
+                downloadLink.download = "spreadsheet.zip";
+            } else {
+                downloadLink.href = "";
+                downloadLink.download = "";
+            }
+        }
+
+        function downloadSpreadsheet() {
+            var downloadLink = document.getElementById("downloadLink");
+            if (downloadLink.href !== "") {
+                downloadLink.click();
+            } else {
+                alert("Pilih setidaknya satu format file dan satu file untuk diunduh.");
+            }
+        }
+    </script>
+
+</body>
+</html>

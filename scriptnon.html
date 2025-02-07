@@ -1,0 +1,561 @@
+const container = document.querySelector(".container");
+
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        setUserOnlineStatus(user.uid, true); // Set status to online
+        Dashboard(user);
+
+        // Set status to offline when the window is closed or refreshed
+        window.addEventListener('beforeunload', () => {
+            setUserOnlineStatus(user.uid, false);
+        });
+    } else {
+        Landing();
+    }
+});
+
+function setUserOnlineStatus(uid, isOnline) {
+    const userRef = firebase.database().ref('pertuni/perpustakaan/pengguna/' + uid + '/status');
+    const lastOnline = new Date().toLocaleString();
+    userRef.set({
+        online: isOnline,
+        lastOnline: isOnline ? "Online" : lastOnline
+    });
+}
+
+const Landing = () => {
+    const element = document.createElement("div");
+    element.classList.add("Landing");
+
+    // Show register and login buttons initially
+    element.innerHTML = `
+        <div class="tombolan">
+            <button data-button="register">Register</button>
+            <button data-button="login">Login</button>
+
+        </div>
+        <div class="inputan"></div>
+    `;
+
+    container.innerHTML = "";
+    container.appendChild(element);
+
+    const registerBtn = element.querySelector(`[data-button="register"]`);
+    const loginBtn = element.querySelector(`[data-button="login"]`);
+
+    // Function to display register form
+    const showRegisterForm = () => {
+        element.querySelector(".inputan").innerHTML = `
+            <label for="nama">Nama Lengkap</label>
+            <input type="text" id="nama" placeholder="Tulis Nama Lengkap" required>
+            <label for="alamat">Alamat</label>
+            <input type="text" id="alamat" placeholder="Tulis Alamat" required>
+            <label for="nomor_telepon">Nomor Telepon</label>
+            <input type="text" id="nomor_telepon" placeholder="Tulis Nomor Telepon" required>
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Tulis Email" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Silahkan masukkan Password untuk Aplikasi" required>
+            <button data-button="submit-register">Register</button>
+        `;
+
+        // Hide login button when register form is displayed
+        loginBtn.style.display = 'none';
+
+        const submitRegisterBtn = element.querySelector(`[data-button="submit-register"]`);
+        submitRegisterBtn.addEventListener('click', () => {
+            const nama = element.querySelector("#nama").value;
+            const alamat = element.querySelector("#alamat").value;
+            const nomorTelepon = element.querySelector("#nomor_telepon").value;
+            const email = element.querySelector("#email").value;
+            const password = element.querySelector("#password").value;
+
+            if (nama && alamat && nomorTelepon && email && password) { // Validate non-empty input
+                firebase.auth().createUserWithEmailAndPassword(email, password)
+                    .then((cred) => {
+                        const userData = {
+                            nama,
+                            alamat,
+                            nomor_telepon: nomorTelepon,
+                            email,
+                            uid: cred.user.uid
+                        };
+                        const userRef = firebase.database().ref('pertuni/perpustakaan/pengguna/' + cred.user.uid);
+                        return userRef.set(userData);
+                    })
+                    .then(() => {
+                        alert(`Terimakasih, Anda Berhasil Membuat Akun`);
+                    })
+                    .catch((error) => {
+                        alert("Error: " + error.message);
+                    });
+            } else {
+                alert("Maaf, Semua Form harus diisi.");
+            }
+        });
+    };
+
+    // Function to display login form
+    const showLoginForm = () => {
+        element.querySelector(".inputan").innerHTML = `
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Tulis Email" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Tulis Password" required>
+            <button data-button="submit-login">Login</button>
+            <button data-button="forgot-password">Forgot Password</button>
+        `;
+
+        // Hide register button when login form is displayed
+        registerBtn.style.display = 'none';
+
+        const submitLoginBtn = element.querySelector(`[data-button="submit-login"]`);
+        const forgotPasswordBtn = element.querySelector(`[data-button="forgot-password"]`);
+
+        submitLoginBtn.addEventListener('click', () => {
+            const email = element.querySelector("#email").value;
+            const password = element.querySelector("#password").value;
+
+            if (email && password) {
+                firebase.auth().signInWithEmailAndPassword(email, password)
+                    .then(() => {
+                        alert(`Selamat Datang Akun: ${firebase.auth().currentUser.uid}`);
+                    })
+                    .catch((error) => {
+                        alert("Error login: " + error.message);
+                    });
+            } else {
+                alert("Email dan Password harus diisi.");
+            }
+        });
+
+        forgotPasswordBtn.addEventListener('click', () => {
+            const email = element.querySelector("#email").value;
+
+            if (email) {
+                firebase.auth().sendPasswordResetEmail(email)
+                    .then(() => {
+                        alert(`Password reset email sent to ${email}`);
+                    })
+                    .catch((error) => {
+                        alert("Error sending reset email: " + error.message);
+                    });
+            } else {
+                alert("Masukkan email untuk mereset password.");
+            }
+        });
+    };
+
+    // Event listener for register and login buttons
+    registerBtn.addEventListener('click', () => {
+        showRegisterForm();
+        // Show register form and hide login button
+        loginBtn.style.display = 'none'; // Hide login button
+    });
+
+    loginBtn.addEventListener('click', () => {
+        showLoginForm();
+        // Show login form and hide register button
+        registerBtn.style.display = 'none'; // Hide register button
+    });
+};
+
+const Dashboard = (user) => {
+    const userRef = firebase.database().ref('pertuni/perpustakaan/pengguna/' + user.uid);
+
+    userRef.once('value').then((snapshot) => {
+        const userData = snapshot.val();
+
+        const element = document.createElement("div");
+        element.classList.add("Dashboard");
+        element.innerHTML = `
+        <style>
+            /* General Reset */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            /* Background & General Styles */
+            body {
+                background-color: transparent;
+                font-family: Arial, sans-serif;
+            }
+            
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            
+            header {
+                background-color: #003366; /* Dark Blue */
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }
+            
+            /* Navigation */
+            nav {
+                background-color: rgba(255, 255, 255, 0.8); /* White with transparency */
+                text-align: center;
+                margin-top: 20px;
+                padding: 10px;
+            }
+            
+            nav button {
+                background-color: transparent;
+                color: black;
+                border: 1px solid black;
+                padding: 10px 20px;
+                cursor: pointer;
+                margin: 5px;
+                font-size: 16px;
+                transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+            }
+            
+            nav button:hover,
+            nav button.active {
+                background-color: #003366; /* Dark Blue */
+                color: white; /* White text when hovered */
+            }
+            
+            nav a {
+                display: inline-block;
+                color: black;
+                margin-top: 10px;
+                text-decoration: none;
+            }
+            
+            nav a:hover {
+                text-decoration: underline;
+            }
+            
+            /* Submenu */
+            .submenu {
+                display: none;
+                background-color: #f0f0f0;
+                padding: 10px;
+                margin-top: 10px;
+            }
+            
+            .submenu-item {
+                margin: 5px 0;
+            }
+            
+            .submenu-item a {
+                text-decoration: none;
+                color: black;
+            }
+            
+            .submenu-item a:hover {
+                color: #003366;
+            }
+            
+            /* Content Section */
+            .content {
+                margin-top: 20px;
+            }
+            
+            /* Input Fields & Form */
+            input, textarea {
+                width: 100%;
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            
+            button[type="submit"], button[data-button="submit-login"], button[data-button="submit-register"] {
+                background-color: #003366;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                margin-top: 10px;
+            }
+            
+            button[type="submit"]:hover, button[data-button="submit-login"]:hover, button[data-button="submit-register"]:hover {
+                background-color: #002244;
+            }
+            
+            /* Media Queries for Responsiveness */
+            @media (max-width: 768px) {
+                header h1 {
+                    font-size: 20px;
+                }
+            
+                nav button {
+                    width: 100%;
+                    padding: 15px;
+                }
+            
+                .submenu {
+                    padding: 5px;
+                }
+            
+                .content {
+                    padding: 15px;
+                }
+            
+                input, textarea {
+                    width: 100%;
+                }
+            
+                .submenu-item a {
+                    font-size: 14px;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                header h1 {
+                    font-size: 18px;
+                }
+            
+                nav button {
+                    padding: 10px;
+                }
+            
+                .submenu-item a {
+                    font-size: 12px;
+                }
+            }
+/* Style for the logo */
+img.img-center {
+    width: 100%; /* Make the image take up 100% of the container's width */
+    max-width: 300px; /* Set a maximum width for the logo */
+    height: auto; /* Maintain aspect ratio */
+    display: block;
+    margin: 0 auto; /* Center the logo horizontally */
+}
+
+/* For smaller screens, adjust logo size further if necessary */
+@media (max-width: 768px) {
+    img.img-center {
+        max-width: 200px; /* Reduce logo size on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    img.img-center {
+        max-width: 150px; /* Further reduce logo size on very small screens */
+    }
+}
+            
+            </style>        
+        <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni"> <!-- Remove width attribute to allow automatic resizing -->
+
+<header>
+
+            <h1>Menu DPD Pertuni Jambi</h1>
+            <nav>        
+                ${user.email === 'asep.pertuni@gmail.com' ? '<button onclick="window.location.href=\'admin hardian.html\'">Admin Hardian</button>' : ''}
+                ${user.email === 'hardian.dwitra@gmail.com' ? '<button onclick="window.location.href=\'admin hardian.html\'">Admin Mitra Bakti</button>' : ''}
+                ${(user.email === 'asep.pertuni@gmail.com' || user.email === 'bika.pratiwi.bp@gmail.com') ? '<button onclick="window.location.href=\'admin aja.html\'">Admin Ketua</button>' : ''}
+                ${(user.email === 'bika.pratiwi.bp@gmail.com' || user.email === 'pertunijambi21@gmail.com' || user.email === 'asep.pertuni@gmail.com' || user.email === 'asep.pertunijambi@gmail.com' || user.email === 'jambi@pertuni.or.id') ? '<button onclick="window.location.href=\'admin pengurus.html\'">Admin Pengurus</button>' : ''}
+                ${(user.email === 'asep.pertuni@gmail.com' || user.email === 'asep.pertunijambi@gmail.com' || user.email === 'bika.pratiwi.bp@gmail.com') ? '<button onclick="window.location.href=\'admin bendahara.html\'">Admin Bendahara</button>' : ''}                
+                ${user.email === 'asep.pertuni@gmail.com' ? '<button onclick="window.location.href=\'sosmed pengurus.html\'">Sosmed Pengurus</button>' : ''}                
+                ${(user.email === 'asep.pertuni@gmail.com' || user.email === 'hardian@gmail.com' || user.email === 'dwitra1305@gmail.com' || user.email === 'kotajambi@pertuni.or.id' || user.email === 'kotasungaipenuh@pertuni.or.id' || user.email === 'merangin@pertuni.or.id' || user.email === 'muarabungo@pertuni.or.id' || user.email === 'kabtebo@pertuni.or.id' || user.email === 'kabkerinci@pertuni.or.id' || user.email === 'batanghari@pertuni.or.id' || user.email === 'sarolangun@pertuni.or.id' || user.email === 'tanjabtimur@pertuni.or.id' || user.email === 'tanjabbarat@pertuni.or.id' || user.email === 'muarojambi@pertuni.or.id') ? '<button onclick="window.location.href=\'admin dpc.html\'">Admin DPC</button>' : ''}
+            
+                <a href="https://forms.gle/q9XrhEnFWae5a7Yk9" target="_blank">Form Pendaftaran</a>                     
+                <button onclick="window.location.href='admin anggota.html'">Menu Anggota DPD</button>                                                
+                <button id="tentangkami" onclick="window.location.href='sosialtatatertib.html'">Tentang Kami</button>                                                   
+                <button id="tentangkami" onclick="window.location.href='member perpustakaanku.html'">Perpustakaan</button>                                                   
+                <br>
+                <a href="https://wa.me/6281539836410?text=Salam,%20Developer%20Aplikasi.">Developer Aplikasi</a>
+                                    
+                <div class="submenu" id="home-submenu">
+                        <div class="submenu-item" id="knowledge">Pengetahuan
+                            <div class="submenu" id="knowledge-submenu">
+                                <div class="submenu-item"><a href="umum.html">Pengetahuan Umum</a></div>
+                                <div class="submenu-item"><a href="agama.html">Pengetahuan Agama</a></div>
+                            </div>
+                        </div>
+                        <div class="submenu-item" id="applications">Aplikasi
+                            <div class="submenu" id="applications-submenu">
+                                <div class="submenu-item"><a href="handphone.html">Handphone</a></div>
+                                <div class="submenu-item"><a href="komputer.html">Komputer</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    <div class="submenu">
+                        <div>
+                            <h2>Kirim Pesan</h2>
+                            <form id="messageForm">
+                                <label for="message">Pesan:</label><br>
+                                <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+                                <button type="submit">Kirim</button>
+                            </form>
+                            <h3>Pesan</h3>
+                            <div id="result"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+            
+            </nav>
+            <script>
+                // get all menu buttons
+                var menuButtons = document.querySelectorAll('nav button');
+    
+                // add click event listener to each menu button
+                for (var i = 0; i < menuButtons.length; i++) {
+                    menuButtons[i].addEventListener('click', function () {
+                        // remove active class from all menu buttons
+                        for (var j = 0; j < menuButtons.length; j++) {
+                            menuButtons[j].classList.remove('active');
+                        }
+    
+                        // add active class to the clicked menu button
+                        this.classList.add('active');
+                    });
+                }
+            </script>
+            <div class="content">
+                <div>Nama: ${userData.nama}</div>        
+                <div>Email: ${userData.email}</div>
+                <div>UID: ${userData.uid}</div>
+                <button data-button="logout">Logout</button>
+            </div>
+        `;
+
+        container.innerHTML = "";
+        container.appendChild(element);
+
+        const logout = element.querySelector(`[data-button="logout"]`);
+        logout.addEventListener('click', () => {
+            setUserOnlineStatus(user.uid, false);            
+            firebase.auth().signOut().then(() => {
+                alert("Terimakasih, Anda Berhasil Logout");
+                Landing();
+            }).catch((err) => alert(err));
+        });
+
+        // Handle form submission and menu interactions
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const message = document.getElementById('message').value;
+            const user = firebase.auth().currentUser;
+
+            if (user) {
+                const userRef = firebase.database().ref('pertuni/perpustakaan/pengguna/' + user.uid);
+                userRef.once('value').then((snapshot) => {
+                    const userData = snapshot.val();
+                    const timestamp = new Date().toLocaleString();
+                    const newMessageRef = firebase.database().ref('pertuni/perpustakaan/orders').push();
+
+                    newMessageRef.set({
+                        waktu_pengiriman: timestamp,
+                        nama_pengguna: userData.nama,
+                        email: userData.email,
+                        pesan: message
+                    }).then(() => {
+                        document.getElementById('messageForm').reset();
+                        loadMessages();
+                    }).catch((error) => {
+                        console.error("Error sending message: ", error);
+                    });
+                });
+            } else {
+                alert("Anda harus login terlebih dahulu!");
+            }
+        });
+        
+        function loadMessages() {
+            firebase.database().ref('pertuni/perpustakaan/orders').once('value', (snapshot) => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+        
+                let count = 1;
+                snapshot.forEach((childSnapshot) => {
+                    const messageData = childSnapshot.val();
+                    const messageKey = childSnapshot.key;
+        
+                    // Detect URLs in the message and convert them to clickable links
+                    const messageWithLinks = messageData.pesan.replace(
+                        /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi,
+                        '<a href="$1" target="_blank">$1</a>'
+                    );
+        
+                    const messageHTML = `
+                        <div>
+                            <p><strong>Nomor:</strong> ${count}</p>
+                            <p><strong>Waktu:</strong> ${messageData.waktu_pengiriman}</p>
+                            <p><strong>Nama Pengguna:</strong> ${messageData.nama_pengguna}</p>
+                            <p><strong>Email:</strong> ${messageData.email}</p>
+                            <p><strong>Pesan:</strong> ${messageWithLinks}</p>
+                            <button onclick="deleteMessage('${messageKey}', '${messageData.email}')">Hapus</button>
+                        </div>
+                    `;
+                    resultDiv.innerHTML += messageHTML;
+                    count++;
+                });
+            });
+        }
+
+        // Function to delete message with confirmation
+        window.deleteMessage = function(messageKey, email) {
+            const user = firebase.auth().currentUser;
+            if (user && user.email === email) {
+                if (confirm("Apakah Anda ingin menghapus pesan ini?")) {
+                    firebase.database().ref('pertuni/perpustakaan/orders').child(messageKey).remove()
+                        .then(() => {
+                            alert("Pesan berhasil dihapus!");
+                            loadMessages(); // Refresh messages after deletion
+                        })
+                        .catch((error) => {
+                            console.error("Error deleting message:", error);
+                        });
+                }
+            } else {
+                alert("Anda tidak memiliki izin untuk menghapus pesan ini.");
+            }
+        };
+
+        loadMessages();  // Load messages when page loads
+
+        // Handle menu interactions
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const submenu = item.querySelector('.submenu');
+                if (submenu) {
+                    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+                }
+                // Close other submenus
+                document.querySelectorAll('.submenu').forEach(sub => {
+                    if (sub !== submenu) {
+                        sub.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        document.querySelectorAll('.submenu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent click event from propagating to parent menu-item
+            });
+        });
+
+        // Handle specific submenus for "Pengetahuan" and "Aplikasi"
+        document.getElementById('knowledge').addEventListener('click', () => {
+            const knowledgeSubmenu = document.getElementById('knowledge-submenu');
+            knowledgeSubmenu.style.display = knowledgeSubmenu.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.getElementById('applications').addEventListener('click', () => {
+            const applicationsSubmenu = document.getElementById('applications-submenu');
+            applicationsSubmenu.style.display = applicationsSubmenu.style.display === 'block' ? 'none' : 'block';
+        });
+
+    }).catch((error) => {
+        console.error("Error retrieving user data:", error);
+        alert("Gagal mengambil data pengguna: " + error.message);
+    });
+};
+
+
+        

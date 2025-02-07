@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base target="_top">
+    <title>Menu Perpustakaan</title>
+    <link rel="stylesheet" type="text/css" href="../asset/gaya tulisan.css">
+    <style>
+        .options-menu {
+            display: none;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 10px;
+            position: absolute;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni">
+    <header>
+        <h1>Perpustakaan</h1>
+        <form id="orderForm" onsubmit="submitOrder(event)">
+            <textarea id="Deskripsi" placeholder="Deskripsi" required></textarea><br>
+            <input type="file" id="fileInput" required><br>
+            <button type="submit">Kirim</button>
+        </form>
+        <button id="deleteAllButton" onclick="deleteAllOrders()">Hapus Semua Data</button>
+        <button class="back-button" onclick="window.location.href='admin perpustakaan.html'">Kembali</button>
+        <div id="userEmail"></div>
+        <input type="number" id="pageNumberInput" placeholder="Nomor Halaman">
+        <button onclick="searchByPageNumber()">Cari</button>
+    </header>
+
+    <div id="pageInfo"></div>
+    <div id="displayData"></div>
+    <button id="previousButton" onclick="previousPage()">Sebelumnya</button>
+    <button id="nextButton" onclick="nextPage()">Selanjutnya</button>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        const database = firebase.database();
+        const ordersRef = database.ref('pertuni/perpustakaan/data/agama');
+
+        function formatIndojakartaTime(time) {
+            return new Intl.DateTimeFormat('id-ID', {
+                timeZone: 'Asia/Jakarta',
+                dateStyle: 'medium',
+                timeStyle: 'medium'
+            }).format(new Date(time));
+        }
+
+        function minus3Minutes(time) {
+            return new Date(time).getTime() - 3 * 60 * 1000;
+        }
+
+        let currentPage = 1;
+        const ordersPerPage = 10;
+
+        function renderOrders(snapshot) {
+            const displayData = document.getElementById('displayData');
+            displayData.innerHTML = "";
+
+            let dataCount = 0;
+            const startIndex = (currentPage - 1) * ordersPerPage;
+
+            snapshot.forEach(function (childSnapshot) {
+                if (dataCount >= startIndex && dataCount < startIndex + ordersPerPage) {
+                    const data = childSnapshot.val();
+                    const key = childSnapshot.key;
+
+                    data.deliveryTime = minus3Minutes(data.deliveryTime);
+
+                    const orderDiv = document.createElement('div');
+                    orderDiv.id = key;
+
+                    orderDiv.innerHTML += '<p>Nomor: ' + (dataCount + 1) + '</p>';
+                    orderDiv.innerHTML += '<p>Waktu Pengiriman Formulir: ' + formatIndojakartaTime(data.deliveryTime) + '</p>';
+                    orderDiv.innerHTML += '<p>Nama File: ' + data.nama_file + '</p>';
+                    orderDiv.innerHTML += '<p>Deskripsi: ' + data.deskripsi + '</p>';
+
+                    const downloadButton = document.createElement('button');
+                    downloadButton.textContent = 'Download File';
+                    downloadButton.onclick = function () {
+                        downloadFile(data.fileURL, data.nama_file);
+                        incrementDownloadCount(key);
+                    };
+                    orderDiv.appendChild(downloadButton);
+
+                    const downloadCountDiv = document.createElement('div');
+                    downloadCountDiv.id = 'downloadCount_' + key;
+                    downloadCountDiv.textContent = 'Unduhan: ' + data.downloadCount;
+                    orderDiv.appendChild(downloadCountDiv);
+
+                    const optionsButton = document.createElement('button');
+                    optionsButton.textContent = 'Opsi Lainnya';
+                    optionsButton.onclick = function () {
+                        toggleOptionsMenu(key);
+                    };
+                    orderDiv.appendChild(optionsButton);
+
+                    const optionsMenu = document.createElement('div');
+                    optionsMenu.className = 'options-menu';
+                    optionsMenu.id = 'optionsMenu_' + key;
+                    optionsMenu.innerHTML = `
+                        <button onclick="showDownloaders('${key}')">Lihat Data Pendownload</button>
+                        <button onclick="confirmDelete('${key}')">Hapus Data</button>
+                        <button onclick="deleteDownloadCount('${key}')">Hapus Unduhan</button>
+                        <button onclick="deleteDownloaders('${key}')">Hapus Data Pendownload</button>
+                    `;
+                    orderDiv.appendChild(optionsMenu);
+
+                    displayData.appendChild(orderDiv);
+                }
+                dataCount++;
+            });
+
+            const totalPages = Math.ceil(dataCount / ordersPerPage);
+            renderPageControls(totalPages);
+        }
+
+        function toggleOptionsMenu(orderKey) {
+            const optionsMenu = document.getElementById('optionsMenu_' + orderKey);
+            optionsMenu.style.display = optionsMenu.style.display === 'none' || optionsMenu.style.display === '' ? 'block' : 'none';
+        }
+
+        function renderPageControls(totalPages) {
+            document.getElementById('pageInfo').innerHTML = "Halaman " + currentPage + " dari " + totalPages;
+            document.getElementById('previousButton').style.display = currentPage === 1 ? "none" : "inline";
+            document.getElementById('nextButton').style.display = currentPage === totalPages ? "none" : "inline";
+        }
+
+        function nextPage() {
+            currentPage++;
+            ordersRef.off();
+            ordersRef.on('value', function(snapshot) {
+                renderOrders(snapshot);
+            });
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                ordersRef.off();
+                ordersRef.on('value', function(snapshot) {
+                    renderOrders(snapshot);
+                });
+            }
+        }
+
+        function searchByPageNumber() {
+            const pageNumber = parseInt(document.getElementById('pageNumberInput').value);
+            if (!isNaN(pageNumber) && pageNumber >= 1) {
+                currentPage = pageNumber;
+                ordersRef.off();
+                ordersRef.on('value', function(snapshot) {
+                    renderOrders(snapshot);
+                });
+            } else {
+                alert('Masukkan nomor halaman yang valid.');
+            }
+        }
+
+        function addDownloaderEmail(orderKey, email) {
+            const downloadersRef = ordersRef.child(orderKey).child('downloaders');
+            downloadersRef.push({
+                email: email,
+                downloadTime: firebase.database.ServerValue.TIMESTAMP
+            });
+        }
+
+        function incrementDownloadCount(orderKey) {
+            const currentCountRef = ordersRef.child(orderKey).child('downloadCount');
+            const userEmail = firebase.auth().currentUser.email;
+
+            currentCountRef.transaction(function(currentCount) {
+                return (currentCount || 0) + 1;
+            });
+
+            addDownloaderEmail(orderKey, userEmail);
+        }
+
+        function showDownloaders(orderKey) {
+            const downloadersRef = ordersRef.child(orderKey).child('downloaders');
+            downloadersRef.once('value', function(snapshot) {
+                if (snapshot.exists()) {
+                    let downloadersList = 'Daftar Pengunduh:\n';
+                    snapshot.forEach(function(childSnapshot) {
+                        const downloader = childSnapshot.val();
+                        downloadersList += 'Email: ' + downloader.email + ', Waktu Unduh: ' + formatIndojakartaTime(downloader.downloadTime) + '\n';
+                    });
+                    alert(downloadersList);
+                } else {
+                    alert('Belum ada yang mengunduh file ini.');
+                }
+            });
+        }
+
+        function downloadFile(fileURL, fileName) {
+            const link = document.createElement('a');
+            link.href = fileURL;
+            link.download = fileName;
+            link.click();
+        }
+
+        function confirmDelete(orderKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                ordersRef.child(orderKey).remove()
+                    .then(() => alert('Data berhasil dihapus.'))
+                    .catch(error => console.error('Gagal menghapus data:', error));
+            }
+        }
+
+        function deleteDownloadCount(orderKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus jumlah unduhan untuk data ini?')) {
+                const downloadCountRef = ordersRef.child(orderKey).child('downloadCount');
+                downloadCountRef.set(0)
+                    .then(() => alert('Jumlah unduhan berhasil diatur menjadi 0.'))
+                    .catch(error => console.error('Gagal mengatur jumlah unduhan:', error));
+            }
+        }
+
+        function deleteAllOrders() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
+                ordersRef.remove()
+                    .then(() => alert('Semua data berhasil dihapus.'))
+                    .catch(error => console.error('Gagal menghapus semua data:', error));
+            }
+        }
+
+        function deleteDownloaders(orderKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus data pendownload untuk data ini?')) {
+                const downloadersRef = ordersRef.child(orderKey).child('downloaders');
+                downloadersRef.remove()
+                    .then(() => alert('Data pendownload berhasil dihapus.'))
+                    .catch(error => console.error('Gagal menghapus data pendownload:', error));
+            }
+        }
+
+        function submitOrder(event) {
+            event.preventDefault();
+
+            const deskripsi = document.getElementById('Deskripsi').value;
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const storageRef = firebase.storage().ref('pertuni/perpustakaan/data/agama/files/' + file.name);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed', function(snapshot) {}, function(error) {
+                    console.error('Gagal mengunggah file:', error);
+                }, function() {
+                    uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                        const orderData = {
+                            deskripsi: deskripsi,
+                            nama_file: file.name,
+                            fileURL: downloadURL,
+                            deliveryTime: firebase.database.ServerValue.TIMESTAMP,
+                            downloadCount: 0
+                        };
+                        ordersRef.push(orderData).then(() => {
+                            clearForm();
+                            ordersRef.once('value', function(snapshot) {
+                                renderOrders(snapshot);
+                            });
+                        });
+                        alert('Data berhasil disimpan.');
+                    });
+                });
+            } else {
+                alert('Pilih file untuk diunggah.');
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('Deskripsi').value = '';
+            document.getElementById('fileInput').value = '';
+        }
+
+        function displayUserEmail() {
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    document.getElementById('userEmail').textContent = 'Email Anda: ' + user.email;
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        window.onload = function() {
+            displayUserEmail();
+
+            ordersRef.on('value', function(snapshot) {
+                renderOrders(snapshot);
+            });
+        };
+    </script>
+</body>
+</html>

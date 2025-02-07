@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <title>Menu</title>
+    <link rel="stylesheet" type="text/css" href="gaya tulisan.css">
+</head>
+<body>
+    <img class="img-center" src="pertuni.jpg" alt="Logo Pertuni"> <!-- Remove width attribute to allow automatic resizing -->
+        <header>  
+        <h1>Admin Pengumuman</h1>
+
+        <!-- Formulir Input -->
+        <form id="orderForm" onsubmit="submitOrder(event)">
+            <textarea id="pengumuman" placeholder="Pengumuman" required></textarea><br>
+            <button type="submit">Kirim</button>
+        </form>
+
+        <button id="deleteAllButton" onclick="deleteAllOrders()">Hapus Semua Pengumuman</button>
+
+        <button onclick="hapusDataKegiatan()">Hapus Data Kegiatan</button>
+
+        <button class="back-button" onclick="window.location.href='admin pengurus.html'">Kembali</button>
+
+        <!-- Tampilkan alamat email pengguna -->
+        <div id="userEmail"></div>
+    </header>
+
+    <div id="displayData"></div>
+        
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+    <script src="script.js"></script>
+    
+    <script>
+        
+        // Get a reference to the database service
+        const database = firebase.database();
+
+        // Reference to the 'pertuni/orders' node in the database
+        const ordersRef = database.ref('pertuni/orders');
+
+        // Reference to the 'pertuni/kegiatan' node in the database
+        const kegiatanRef = database.ref('pertuni/kegiatan');
+
+        // Function to format the time to Indojakarta time
+        function formatIndojakartaTime(time) {
+            return new Intl.DateTimeFormat('en-ID', {
+                timeZone: 'Asia/Jakarta',
+                dateStyle: 'medium',
+                timeStyle: 'medium'
+            }).format(new Date(time));
+        }
+
+        // Function to min 3 minutes to the delivery time
+        function minus3Minutes(time) {
+            return new Date(time).getTime() - 3 * 60 * 1000;
+        }
+
+        // Function to confirm deletion before removing an order
+        function confirmDelete(key) {
+            var result = confirm("Apakah Anda ingin menghapus data ini?");
+            if (result) {
+                ordersRef.child(key).remove();
+                document.getElementById(key).remove();
+            }
+        }
+
+        // Function to remove all orders
+        function deleteAllOrders() {
+            var result = confirm("Apakah Anda yakin ingin menghapus semua pengumuman?");
+            if (result) {
+                // Remove all orders from the database
+                ordersRef.remove();
+
+                // Remove all order divs from the display
+                var displayData = document.getElementById('displayData');
+                while (displayData.firstChild) {
+                    displayData.removeChild(displayData.firstChild);
+                }
+            }
+        }
+
+        // Function to detect URLs in text and convert them to clickable links
+        function linkify(text) {
+            var urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, function(url) {
+                return '<a href="' + url + '" target="_blank">' + url + '</a>';
+            });
+        }
+
+        // Function to submit order to database and redirect to WhatsApp group
+        function submitOrder(event) {
+            event.preventDefault();
+
+            const pengumuman = document.getElementById('pengumuman').value;
+
+            // Linkify the pengumuman text
+            const pengumumanLinkified = linkify(pengumuman);
+
+            // Data yang akan disimpan di database
+            const orderData = {
+                pengumuman: pengumumanLinkified, // Use linkified pengumuman
+                deliveryTime: firebase.database.ServerValue.TIMESTAMP // Set delivery time to current server time
+            };
+
+            // Push order data to database
+            ordersRef.push(orderData);
+
+            // Clear form fields after submission
+            document.getElementById('pengumuman').value = "";
+
+            // Membuat pesan yang akan dikirim ke WhatsApp
+            const message = encodeURIComponent(`Pengumuman: ${pengumuman}`);
+
+            // Membuat URL WhatsApp dengan pesan yang sudah diisi
+            const whatsappURL = `https://wa.me/?text=${message}`;
+
+            // Membuka URL WhatsApp
+            window.open(whatsappURL, '_blank');
+        }
+
+        // Function to attach an asynchronous callback to read the data at our reference
+        ordersRef.on('value', function (snapshot) {
+            document.getElementById('displayData').innerHTML = ""; // Clear display data before repopulating
+            snapshot.forEach(function (childSnapshot) {
+                var data = childSnapshot.val();
+                var key = childSnapshot.key;
+
+                // Minus 3 minutes from the delivery time
+                data.deliveryTime = minus3Minutes(data.deliveryTime);
+
+                // Create a new div element
+                var orderDiv= document.createElement('div');
+                orderDiv.id = key;
+                orderDiv.innerHTML += '<p>Waktu Pengiriman Formulir: ' + formatIndojakartaTime(data.deliveryTime) + '</p>';
+                orderDiv.innerHTML += '<p>Pengumuman: ' + data.pengumuman + '</p>';
+                // Create a delete button
+                var deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Hapus';
+                deleteButton.onclick = function () {
+                    confirmDelete(key);
+                };
+
+               
+                // Append the delete button to the 'orderDiv' div
+                orderDiv.appendChild(deleteButton);
+
+                // Append the new div element to the 'displayData' div
+                document.getElementById('displayData').appendChild(orderDiv);
+            });
+        }, function (error) {
+            console.error(error);
+        });
+
+// Function to confirm deletion before removing data
+function hapusDataKegiatan() {
+    var result = confirm("Apakah Anda ingin menghapus semua data Kegiatan yang telah mendaftar?");
+    if (result) {
+        var url = 'https://script.google.com/macros/s/AKfycbwnSSJSbIVT9c4-FPYEw_D-7vIRTwIVhTnzLRycRt_DEiq1yMR0U2kLUbMi1q7qgmSM/exec';
+
+        // Mengirim permintaan HTTP GET
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.send();
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                console.log("Data kegiatan berhasil dihapus!");
+            }
+        };
+    }
+}
+</script>
+<!-- Script for fetching data from Google Sheets -->
+<script>
+function fetchData(pageNumber) {
+    var url = 'https://script.google.com/macros/s/AKfycbyaVqROIoX7-cgVzqA6fgcLcFI58BnR1EmKcQpkjLSbNsrLmRaDIt1-gHmypSci4Y1FlA/exec?page=' + pageNumber;
+    fetch(url)
+        .then(response =>
+            response.json())
+        .then(data => displayData(data))
+        .catch(error => console.error('Error fetching data:', error));
+}
+
+function displayData(data) {
+    var dataContainer = document.getElementById('data-container');
+    dataContainer.innerHTML = '';
+    var count = 0;
+    data.forEach(row => {
+        if (row['nama pendaftar']) {
+            var para = document.createElement('p');
+            para.textContent = row['nama pendaftar'];
+            dataContainer.appendChild(para);
+            count++;
+        }
+    });
+    document.getElementById('total-data').innerText = "Jumlah Pendaftar: " + count;
+}
+
+function search() {
+    var searchQuery = document.getElementById('search-input').value;
+    var url = 'https://script.google.com/macros/s/AKfycbyaVqROIoX7-cgVzqA6fgcLcFI58BnR1EmKcQpkjLSbNsrLmRaDIt1-gHmypSci4Y1FlA/exec?search=' + searchQuery;
+    fetch(url)
+        .then(response => response.json())
+        .then(data => displayData(data))
+        .catch(error => console.error('Error searching data:', error));
+}
+
+// Fetch data for the initial page load
+fetchData(1);
+</script>
+<a href="https://forms.gle/XHo1oJFAvb5bBcL19" target="_blank">Daftar Sekarang</a>
+<br>
+<button onclick="search()">Lihat Nama Pendaftar</button><br>
+<p id="total-data"></p>
+<div id="data-container">
+<!-- Data will be inserted here -->
+</div>
+<br>
+</body>
+</html>

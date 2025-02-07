@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Panti</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+</head>
+<body>
+    <h1>Data Panti</h1>
+    <div>
+        <label><input type="checkbox" id="namaPanti"> Nama Panti</label><br>
+        <label><input type="checkbox" id="kabupatenKota"> Kabupaten/Kota</label><br>
+        <label><input type="checkbox" id="terapis"> Terapis</label><br>
+        <input type="text" id="searchText" placeholder="Masukkan kata kunci...">
+        <button onclick="searchData()">Cari</button>
+    </div>
+    <p id="notification"></p>
+    <div id="data-container"></div>
+    <p id="pagination"></p> <!-- Untuk menampilkan informasi "1 dari total" -->
+    <button id="previous" onclick="navigate(-1)" disabled>Sebelumnya</button>
+    <button id="next" onclick="navigate(1)" disabled>Selanjutnya</button>
+
+    <!-- Tombol untuk menghapus URL photoPanti dan backsound -->
+    <button id="hapusPhotoPanti" onclick="hapusPhotoPanti()">Hapus Photo Panti</button>
+    <button id="hapusBacksound" onclick="hapusBacksound()">Hapus Backsound</button>
+    <button id="hapusData" onclick="hapusData()">Hapus Data Ini</button> <!-- Tombol Hapus Data -->
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+            authDomain: "dpd-pertuni.firebaseapp.com",
+            databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dpd-pertuni",
+            storageBucket: "dpd-pertuni.appspot.com",
+            messagingSenderId: "253614860627",
+            appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+            measurementId: "G-6J7XZB9R8K"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.database();
+        const storage = firebase.storage();
+        let data = [];
+        let filteredData = [];
+        let currentIndex = 0;
+
+        // Fetch data from Firebase Realtime Database
+async function fetchData() {
+    const dataContainer = document.getElementById('data-container');
+    dataContainer.innerHTML = '<p>Loading data...</p>';
+
+    try {
+        const snapshot = await db.ref('pertuni/perpustakaan/pijat/form').once('value');
+        const dataObj = snapshot.val();
+        
+        // Menambahkan key ke setiap data
+        data = dataObj ? Object.keys(dataObj).map(key => ({ ...dataObj[key], key })) : [];
+
+        if (data.length > 0) {
+            filteredData = [...data];  // Initialize filtered data
+            displayData();
+        } else {
+            dataContainer.innerHTML = '<p>No data found.</p>';
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        dataContainer.innerHTML = '<p>Error loading data.</p>';
+    }
+}
+
+
+        // Function to display data
+        function displayData() {
+            const dataContainer = document.getElementById('data-container');
+            const pagination = document.getElementById('pagination');
+            const previousButton = document.getElementById('previous');
+            const nextButton = document.getElementById('next');
+
+            if (filteredData.length > 0 && currentIndex >= 0 && currentIndex < filteredData.length) {
+                const item = filteredData[currentIndex];
+
+                // Filter Biaya
+                let biayaHTML = '';
+                if (item.biaya1) biayaHTML += `<input type="checkbox" id="biaya1" /> <label for="biaya1"><strong>Biaya 1 Jam:</strong> ${item.biaya1}</label><br>`;
+                if (item.biaya1_5) biayaHTML += `<input type="checkbox" id="biaya1_5" /> <label for="biaya1_5"><strong>Biaya 1.5 Jam:</strong> ${item.biaya1_5}</label><br>`;
+                if (item.biaya2) biayaHTML += `<input type="checkbox" id="biaya2" /> <label for="biaya2"><strong>Biaya 2 Jam:</strong> ${item.biaya2}</label><br>`;
+                if (item.biayaperselesai) biayaHTML += `<input type="checkbox" id="biayaperselesai" /> <label for="biayaperselesai"><strong>Biaya Perselesai:</strong> ${item.biayaperselesai}</label><br>`;
+
+                // Filter Terapis
+                let terapisHTML = '';
+                if (item.terapis && Array.isArray(item.terapis)) {
+                    item.terapis.forEach((terapis, index) => {
+                        terapisHTML += `<input type="checkbox" id="terapis${index}" /> <label for="terapis${index}"><strong>Terapis:</strong> ${terapis}</label><br>`;
+                    });
+                } else if (item.terapis) {
+                    terapisHTML = `<input type="checkbox" id="terapis" /> <label for="terapis"><strong>Terapis:</strong> ${item.terapis}</label><br>`;
+                }
+
+                // Tampilkan data dengan URL sebagai teks
+                dataContainer.innerHTML = `
+                    <h2>${currentIndex + 1}. ${item.namaPanti}</h2>
+                    <p><strong>Deskripsi:</strong> ${item.deskripsi}</p>
+                    <p><strong>Nomor Admin:</strong> ${item.nomorAdmin}</p>
+                    <p><strong>Kabupaten/Kota:</strong> ${item.kabupaten}</p>
+                    <p><strong>Alamat Panti:</strong> ${item.alamatPanti}</p>
+<p><strong>Lokasi Maps:</strong> 
+    ${item.lokasiMaps ? `<a href="${item.lokasiMaps}" target="_blank">${item.lokasiMaps}</a>` : 'Tidak tersedia'}
+</p>
+                    <p><strong>Hari Kerja:</strong> ${item.hariKerja}</p>
+                    <p><strong>Jam Buka:</strong> ${item.jamBuka}:${item.menitBuka}</p>
+                    <p><strong>Jam Tutup:</strong> ${item.jamTutup}:${item.menitTutup}</p>
+                    ${biayaHTML}
+                    ${terapisHTML}
+                    <p><strong>Nama:</strong> ${item.nama}</p>
+                    <p><strong>Alamat:</strong> ${item.alamat}</p>
+                    <p><strong>Nomor Telepon:</strong> ${item.nomor_telepon}</p>
+                    <p><strong>Email:</strong> ${item.email}</p>
+                    <p><strong>Photo Panti URL:</strong> 
+                        <a href="${item.photoPanti}" target="_blank">${item.photoPanti}</a>
+                    </p>
+                    <p><strong>Backsound URL:</strong> 
+                        <a href="${item.backsound}" target="_blank">${item.backsound}</a>
+                    </p>
+                    <hr>
+                `;
+
+                // Update pagination text
+                pagination.innerHTML = `${currentIndex + 1} dari ${filteredData.length}`;
+
+                // Enable/Disable navigation buttons
+                previousButton.disabled = currentIndex === 0;
+                nextButton.disabled = currentIndex === filteredData.length - 1;
+            }
+        }
+
+        function navigate(direction) {
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < filteredData.length) {
+                currentIndex = newIndex;
+                displayData();
+            }
+        }
+
+        // Search function based on checklist and input text
+        function searchData() {
+            const searchText = document.getElementById('searchText').value.toLowerCase();
+            const isNamaPantiChecked = document.getElementById('namaPanti').checked;
+            const isKabupatenKotaChecked = document.getElementById('kabupatenKota').checked;
+            const isTerapisChecked = document.getElementById('terapis').checked;
+
+            filteredData = data.filter(item => {
+                let matches = true;
+
+                if (isNamaPantiChecked && !item.namaPanti.toLowerCase().includes(searchText)) {
+                    matches = false;
+                }
+                if (isKabupatenKotaChecked && !item.kabupaten.toLowerCase().includes(searchText)) {
+                    matches = false;
+                }
+                if (isTerapisChecked && !item.terapis?.some(terapis => terapis.toLowerCase().includes(searchText))) {
+                    matches = false;
+                }
+
+                return matches;
+            });
+
+            // Display notification based on search result
+            const notification = document.getElementById('notification');
+            if (filteredData.length > 0) {
+                notification.textContent = 'Data ditemukan!';
+            } else {
+                notification.textContent = 'Data tidak ditemukan!';
+            }
+
+            // Reset to the first item if data found
+            currentIndex = 0;
+            displayData();
+        }
+
+        // Function to delete photoPanti URL from Firebase Storage and Realtime Database
+        async function hapusPhotoPanti() {
+            if (filteredData.length > 0 && currentIndex >= 0 && currentIndex < filteredData.length) {
+                const item = filteredData[currentIndex];
+
+                if (item.photoPanti) {
+                    // Delete from Firebase Storage
+                    const storageRef = storage.refFromURL(item.photoPanti);
+                    try {
+                        await storageRef.delete();
+                        console.log('Photo Panti deleted from Firebase Storage.');
+
+                        // Update the Realtime Database to remove the URL
+                        await db.ref('pertuni/perpustakaan/pijat/form').orderByChild('photoPanti').equalTo(item.photoPanti).once('value', async (snapshot) => {
+                            snapshot.forEach(async (childSnapshot) => {
+                                const childKey = childSnapshot.key;
+                                await db.ref('pertuni/perpustakaan/pijat/form/' + childKey).update({
+                                    photoPanti: null
+                                });
+                                console.log('Photo Panti URL deleted from Firebase Realtime Database.');
+                            });
+                        });
+
+                        // Refresh the displayed data
+                        fetchData();
+                    } catch (error) {
+                        console.error('Error deleting Photo Panti:', error);
+                    }
+                } else {
+                    alert('Tidak ada URL Photo Panti untuk dihapus!');
+                }
+            }
+        }
+
+        // Function to delete backsound URL from Firebase Storage and Realtime Database
+        async function hapusBacksound() {
+            if (filteredData.length > 0 && currentIndex >= 0 && currentIndex < filteredData.length) {
+                const item = filteredData[currentIndex];
+
+                if (item.backsound) {
+                    // Delete from Firebase Storage
+                    const storageRef = storage.refFromURL(item.backsound);
+                    try {
+                        await storageRef.delete();
+                        console.log('Backsound deleted from Firebase Storage.');
+
+                        // Update the Realtime Database to remove the URL
+                        await db.ref('pertuni/perpustakaan/pijat/form').orderByChild('backsound').equalTo(item.backsound).once('value', async (snapshot) => {
+                            snapshot.forEach(async (childSnapshot) => {
+                                const childKey = childSnapshot.key;
+                                await db.ref('pertuni/perpustakaan/pijat/form/' + childKey).update({
+                                    backsound: null
+                                });
+                                console.log('Backsound URL deleted from Firebase Realtime Database.');
+                            });
+                        });
+
+                        // Refresh the displayed data
+                        fetchData();
+                    } catch (error) {
+                        console.error('Error deleting Backsound:', error);
+                    }
+                } else {
+                    alert('Tidak ada URL Backsound untuk dihapus!');
+                }
+            }
+        }
+
+        // Function to delete the current data item from Firebase Realtime Database
+        async function hapusData() {
+            if (filteredData.length > 0 && currentIndex >= 0 && currentIndex < filteredData.length) {
+                const item = filteredData[currentIndex];
+
+                // Confirm the deletion action
+                const confirmation = confirm('Apakah Anda yakin ingin menghapus data ini?');
+                if (confirmation) {
+                    try {
+                        // Remove the current data from Firebase Realtime Database
+                        const dataRef = db.ref('pertuni/perpustakaan/pijat/form/' + item.key);
+                        await dataRef.remove();
+                        console.log('Data berhasil dihapus dari Firebase Realtime Database.');
+
+                        // If there is a photoPanti or backsound URL, delete those from Firebase Storage
+                        if (item.photoPanti) {
+                            const storageRef = storage.refFromURL(item.photoPanti);
+                            await storageRef.delete();
+                            console.log('Photo Panti deleted from Firebase Storage.');
+                        }
+
+                        if (item.backsound) {
+                            const storageRef = storage.refFromURL(item.backsound);
+                            await storageRef.delete();
+                            console.log('Backsound deleted from Firebase Storage.');
+                        }
+
+                        // Refresh the displayed data after deletion
+                        fetchData();
+                    } catch (error) {
+                        console.error('Error deleting data:', error);
+                    }
+                }
+            } else {
+                alert('Tidak ada data yang bisa dihapus.');
+            }
+        }
+
+        fetchData();
+    </script>
+    <button class="back-button" onclick="window.location.href='admin hardian.html'">Kembali</button>
+
+</body>
+</html>

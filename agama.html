@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base target="_top">
+    <title>Menu Perpustakaan</title>
+
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            color: #00008b; /* Warna biru tua */
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00008b;
+        }
+
+        /* Responsif untuk layar kecil */
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                text-align: center;
+            }
+
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            #displayData div {
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Responsif untuk layar besar */
+        @media only screen and (min-width: 601px) {
+            #displayData {
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            #displayData div {
+                flex: 1 1 calc(50% - 20px);
+                margin: 10px;
+                border: 1px solid #ccc;
+                padding: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        /* Tombol */
+        button {
+            background-color: #00008b;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #000066;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            width: 100px;
+        }
+    </style>
+        <header>
+        <h1>Perpustakaan</h1>
+
+        <!-- Formulir Input -->
+        <form id="orderForm" onsubmit="submitOrder(event)">
+            
+        </form>
+
+        <!-- Input nomor halaman dan tombol cari -->
+        <input type="number" id="pageNumberInput" placeholder="Nomor Halaman">
+        <button onclick="searchByPageNumber()">Cari</button>
+    </header>
+
+    <!-- Elemen untuk menampilkan informasi jumlah halaman -->
+    <div id="pageInfo"></div>
+
+    <!-- Elemen untuk menampilkan data -->
+    <div id="displayData"></div>
+    
+    <!-- Tombol navigasi halaman -->
+    <button id="previousButton" onclick="previousPage()">Sebelumnya</button>
+    <button id="nextButton" onclick="nextPage()">Selanjutnya</button>
+        
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+
+        // Get a reference to the database service
+        const database = firebase.database();
+        const ordersRef = database.ref('pertuni/perpustakaan/data/agama');
+
+        // Format waktu ke zona waktu Jakarta
+        function formatIndojakartaTime(time) {
+            return new Intl.DateTimeFormat('id-ID', {
+                timeZone: 'Asia/Jakarta',
+                dateStyle: 'medium',
+                timeStyle: 'medium'
+            }).format(new Date(time));
+        }
+
+        // Kurangi 3 menit dari waktu pengiriman
+        function minus3Minutes(time) {
+            return new Date(time).getTime() - 3 * 60 * 1000;
+        }
+
+        // Variabel untuk pagination
+        let currentPage = 1;
+        const ordersPerPage = 10;
+
+        // Fungsi untuk menampilkan data dari database
+        function renderOrders(snapshot) {
+            const displayData = document.getElementById('displayData');
+            displayData.innerHTML = ""; // Bersihkan data yang ada sebelum menampilkan yang baru
+
+            let dataCount = 0;
+            const startIndex = (currentPage - 1) * ordersPerPage;
+
+            snapshot.forEach(function (childSnapshot) {
+                if (dataCount >= startIndex && dataCount < startIndex + ordersPerPage) {
+                    const data = childSnapshot.val();
+                    const key = childSnapshot.key;
+
+                    data.deliveryTime = minus3Minutes(data.deliveryTime); // Kurangi 3 menit dari waktu pengiriman
+
+                    const orderDiv = document.createElement('div');
+                    orderDiv.id = key;
+
+                    orderDiv.innerHTML += '<p>Nomor: ' + (dataCount + 1) + '</p>';
+                    orderDiv.innerHTML += '<p>Nama File: ' + data.nama_file + '</p>';
+                    orderDiv.innerHTML += '<p>Deskripsi: ' + data.deskripsi + '</p>';
+
+                    // Tombol untuk mengunduh file
+                    const downloadButton = document.createElement('button');
+                    downloadButton.textContent = 'Download File';
+                    downloadButton.onclick = function () {
+                        downloadFile(data.fileURL, data.nama_file);
+                        incrementDownloadCount(key);
+                    };
+                    orderDiv.appendChild(downloadButton);
+
+                    // Div untuk menampilkan jumlah unduhan
+                    const downloadCountDiv = document.createElement('div');
+                    downloadCountDiv.id = 'downloadCount_' + key;
+                    downloadCountDiv.textContent = 'Unduhan: ' + data.downloadCount;
+                    orderDiv.appendChild(downloadCountDiv);                    
+                    
+                    displayData.appendChild(orderDiv); // Tambahkan elemen baru ke dalam div displayData
+                }
+                dataCount++;
+            });
+
+            const totalPages = Math.ceil(dataCount / ordersPerPage);
+            renderPageControls(totalPages);
+        }
+
+        // Fungsi untuk mengatur tampilan halaman sesuai dengan pengaturan saat ini
+        function renderPageControls(totalPages) {
+            document.getElementById('pageInfo').innerHTML = "Halaman " + currentPage + " dari " + totalPages;
+
+            document.getElementById('previousButton').style.display = currentPage === 1 ? "none" : "inline";
+            document.getElementById('nextButton').style.display = currentPage === totalPages ? "none" : "inline";
+        }
+
+        // Fungsi untuk pindah ke halaman berikutnya
+        function nextPage() {
+            currentPage++;
+            ordersRef.off(); // Hapus event listener sebelumnya
+            ordersRef.on('value', function(snapshot) {
+                renderOrders(snapshot);
+            });
+        }
+
+        // Fungsi untuk kembali ke halaman sebelumnya
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                ordersRef.off(); // Hapus event listener sebelumnya
+                ordersRef.on('value', function(snapshot) {
+                    renderOrders(snapshot);
+                });
+            }
+        }
+
+        // Fungsi untuk mencari data berdasarkan nomor halaman
+        function searchByPageNumber() {
+            const pageNumber = parseInt(document.getElementById('pageNumberInput').value);
+            if (!isNaN(pageNumber) && pageNumber >= 1) {
+                currentPage = pageNumber;
+                ordersRef.off(); // Hapus event listener sebelumnya
+                ordersRef.on('value', function(snapshot) {
+                    renderOrders(snapshot);
+                });
+            } else {
+                alert('Masukkan nomor halaman yang valid.');
+            }
+        }
+
+        // Fungsi untuk menambahkan email pengunduh ke record file di Firebase
+        function addDownloaderEmail(orderKey, email) {
+            const downloadersRef = ordersRef.child(orderKey).child('downloaders');
+            downloadersRef.push({
+                email: email,
+                downloadTime: firebase.database.ServerValue.TIMESTAMP
+            });
+        }
+
+        // Fungsi untuk meningkatkan jumlah unduhan dan menambahkan email pengunduh
+        function incrementDownloadCount(orderKey) {
+            const currentCountRef = ordersRef.child(orderKey).child('downloadCount');
+            const userEmail = firebase.auth().currentUser.email;
+
+            currentCountRef.transaction(function(currentCount) {
+                return (currentCount || 0) + 1;
+            });
+
+            addDownloaderEmail(orderKey, userEmail);
+        }
+
+        // Fungsi untuk menampilkan daftar pengunduh file
+        function showDownloaders(orderKey) {
+            const downloadersRef = ordersRef.child(orderKey).child('downloaders');
+            downloadersRef.once('value', function(snapshot) {
+                if (snapshot.exists()) {
+                    let downloadersList = 'Daftar Pengunduh:\n';
+                    snapshot.forEach(function(childSnapshot) {
+                        const downloader = childSnapshot.val();
+                        downloadersList += 'Email: ' + downloader.email + ', Waktu Unduh: ' + formatIndojakartaTime(downloader.downloadTime) + '\n';
+                    });
+                    alert(downloadersList);
+                } else {
+                    alert('Belum ada yang mengunduh file ini.');
+                }
+            });
+        }
+
+        // Fungsi untuk mengunduh file
+        function downloadFile(fileURL, fileName) {
+            const link = document.createElement('a');
+            link.href = fileURL;
+            link.download = fileName;
+            link.click();
+        }
+
+        // Fungsi untuk menghapus data
+        function confirmDelete(orderKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                ordersRef.child(orderKey).remove()
+                    .then(() => alert('Data berhasil dihapus.'))
+                    .catch(error => console.error('Gagal menghapus data:', error));
+            }
+        }
+
+        // Fungsi untuk menghapus jumlah unduhan
+        function deleteDownloadCount(orderKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus jumlah unduhan untuk data ini?')) {
+                const downloadCountRef = ordersRef.child(orderKey).child('downloadCount');
+                
+                downloadCountRef.set(0) // Setel jumlah unduhan menjadi 0
+                    .then(() => alert('Jumlah unduhan berhasil diatur menjadi 0.'))
+                    .catch(error => console.error('Gagal mengatur jumlah unduhan:', error));
+            }
+        }
+
+        // Fungsi untuk menghapus semua data
+        function deleteAllOrders() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
+                ordersRef.remove()
+                    .then(() => alert('Semua data berhasil dihapus.'))
+                    .catch(error => console.error('Gagal menghapus semua data:', error));
+            }
+        }
+
+        // Fungsi untuk menghapus data pendownload
+        function deleteDownloaders(orderKey) {
+            if (confirm('Apakah Anda yakin ingin menghapus data pendownload untuk data ini?')) {
+                const downloadersRef = ordersRef.child(orderKey).child('downloaders');
+                
+                downloadersRef.remove()
+                    .then(() => alert('Data pendownload berhasil dihapus.'))
+                    .catch(error => console.error('Gagal menghapus data pendownload:', error));
+            }
+        }
+
+        // Fungsi untuk mengirimkan formulir
+        function submitOrder(event) {
+            event.preventDefault();
+
+            const deskripsi = document.getElementById('Deskripsi').value;
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const storageRef = firebase.storage().ref('pertuni/perpustakaan/data/agama/files/' + file.name);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed', function(snapshot) {
+                    // Progress event jika ingin menampilkan progress bar
+                }, function(error) {
+                    console.error('Gagal mengunggah file:', error);
+                }, function() {
+                    uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                        const orderData = {
+                            deskripsi: deskripsi,
+                            nama_file: file.name,
+                            fileURL: downloadURL,
+                            deliveryTime: firebase.database.ServerValue.TIMESTAMP,
+                            downloadCount: 0
+                        };
+                        ordersRef.push(orderData).then(() => {
+                            // Setelah data berhasil disimpan, kosongkan form
+                            clearForm();
+                            // Tampilkan data yang baru saja dikirim
+                            ordersRef.once('value', function(snapshot) {
+                                renderOrders(snapshot);
+                            });
+                        });
+                        alert('Data berhasil disimpan.');
+                    });
+                });
+            } else {
+                alert('Pilih file untuk diunggah.');
+            }
+        }
+
+        // Fungsi untuk membersihkan formulir
+        function clearForm() {
+            document.getElementById('Deskripsi').value = '';
+            document.getElementById('fileInput').value = '';
+        }
+
+        // Fungsi untuk menampilkan email pengguna yang sedang login
+        function displayUserEmail() {
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    document.getElementById('userEmail').textContent = 'Email Anda: ' + user.email;
+                } else {
+                    window.location.href = 'login.html'; // Redirect ke halaman login jika belum login
+                }
+            });
+        }
+
+        // Jalankan fungsi untuk menampilkan email pengguna saat halaman dimuat
+        window.onload = function() {
+            displayUserEmail();
+
+            // Menampilkan data dari Firebase Realtime Database
+            ordersRef.on('value', function(snapshot) {
+                renderOrders(snapshot);
+            });
+        };
+    </script>
+        <button class="back-button" onclick="window.location.href='member perpustakaanku.html'">Kembali</button>
+
+</body>
+</html>

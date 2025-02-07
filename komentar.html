@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Berkirim Pesan</title>
+    <style>
+        /* CSS untuk keseluruhan body */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 5vw; /* Menggunakan vw untuk responsif */
+            font-size: 16px; /* Font dasar */
+            background-color: #FFFFFF; /* Warna latar belakang putih */
+            color: #000080; /* Warna tulisan biru tua */
+            margin: 0;
+            text-align: justify; /* Menjaga teks tetap rata kiri-kanan */
+        }
+
+        /* Aturan untuk tampilan responsif */
+        p {
+            white-space: pre-wrap; /* Agar teks turun ke bawah saat ada 'enter' */
+            word-wrap: break-word; /* Memastikan kata tidak terpotong di layar kecil */
+        }
+
+        /* CSS untuk container utama */
+        .container {
+            max-width: 90%; /* Menyesuaikan layar */
+            margin: auto;
+            background-color: white;
+            padding: 2rem; /* Padding dengan rem untuk fleksibilitas */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* CSS untuk textarea */
+        textarea {
+            width: 100%;
+            height: 150px; /* Tinggi textarea diperbesar */
+            margin-bottom: 10px;
+            padding: 1rem; /* Padding responsif */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem; /* Font-size responsif */
+            box-sizing: border-box;
+        }
+
+        /* CSS untuk tombol */
+        button {
+            padding: 1rem 2rem; /* Padding lebih besar dan responsif */
+            border-radius: 5px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem; /* Font-size responsif */
+            width: 100%; /* Tombol memenuhi lebar pada layar kecil */
+        }
+
+        /* Efek hover untuk tombol */
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* CSS untuk kelas hidden */
+        .hidden {
+            display: none;
+        }
+
+        /* CSS untuk kotak komentar */
+        .comment {
+            background-color: #f9f9f9;
+            padding: 1rem; /* Padding responsif */
+            margin-bottom: 10px;
+            border-left: 5px solid #4CAF50;
+            border-radius: 5px;
+            font-size: 1rem; /* Font-size responsif */
+            box-sizing: border-box;
+        }
+
+        /* CSS untuk link dalam komentar */
+        .comment a {
+            color: #007BFF;
+            font-size: 1rem; /* Ukuran font responsif */
+        }
+
+        /* CSS untuk tombol hapus dalam komentar */
+        .comment .delete {
+            color: red;
+            cursor: pointer;
+            font-size: 0.9rem; /* Ukuran font lebih kecil untuk hapus */
+        }
+
+        /* Efek hover untuk tombol hapus */
+        .comment .delete:hover {
+            text-decoration: underline;
+        }
+
+        /* Media Queries untuk layar kecil (kurang dari 600px) */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px; /* Mengurangi padding pada layar kecil */
+                font-size: 14px; /* Ukuran font dasar dikurangi */
+            }
+
+            .container {
+                padding: 1rem; /* Padding lebih kecil pada layar kecil */
+            }
+
+            textarea {
+                height: 100px; /* Tinggi textarea dikurangi */
+            }
+
+            button {
+                width: 100%; /* Tombol memenuhi layar kecil */
+                font-size: 0.9rem; /* Ukuran font dikurangi pada tombol */
+            }
+
+            .comment {
+                font-size: 0.9rem; /* Ukuran font lebih kecil pada komentar */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Menu Berkirim Pesan</h1>
+        <button id="btnTulisKomentar">Buat Pesan</button>
+        <div id="formKomentar" class="hidden">
+            <textarea id="komentarText" placeholder="Tulis komentar anda..."></textarea>
+            <button id="btnKirim">Kirim</button>
+        </div>
+
+        <h2>Hasil Pesan</h2>
+        <div id="hasilKomentar"></div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        // Inisialisasi Firebase
+        var firebaseConfig = {
+            apiKey: "AIzaSyDMHJEtWpbKejtN9weGuLd0KNtWYZAfMy4",
+            authDomain: "dpd-pertuni.firebaseapp.com",
+            databaseURL: "https://dpd-pertuni-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dpd-pertuni",
+            storageBucket: "dpd-pertuni.appspot.com",
+            messagingSenderId: "253614860627",
+            appId: "1:253614860627:web:8fa7856e56c9cfd84359a6",
+            measurementId: "G-6J7XZB9R8K"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+        var auth = firebase.auth();
+
+        var btnTulisKomentar = document.getElementById("btnTulisKomentar");
+        var formKomentar = document.getElementById("formKomentar");
+        var btnKirim = document.getElementById("btnKirim");
+        var komentarText = document.getElementById("komentarText");
+        var hasilKomentar = document.getElementById("hasilKomentar");
+
+        // Menampilkan form komentar saat tombol diklik
+        btnTulisKomentar.addEventListener("click", function() {
+            formKomentar.classList.toggle("hidden");
+        });
+
+        // Menangani pengiriman komentar
+        btnKirim.addEventListener("click", function() {
+            var komentar = komentarText.value.trim();
+            if (komentar) {
+                var user = auth.currentUser;
+                if (user) {
+                    // Ambil data pengguna
+                    var userRef = database.ref('pertuni/perpustakaan/pengguna/' + user.uid);
+                    userRef.once('value').then(function(snapshot) {
+                        var dataUser = snapshot.val();
+                        var userName = dataUser.nama;
+                        var userPhone = dataUser.nomor_telepon;
+                        var userProvinsi = dataUser.pertuni_provinsi || "Tidak ada provinsi";
+
+                        // Menyimpan komentar ke Firebase
+                        var komentarData = {
+                            waktu: new Date().toISOString(),
+                            nama: userName,
+                            nomor_telepon: userPhone,
+                            pertuni_provinsi: userProvinsi,
+                            komentar: komentar
+                        };
+
+                        // Menyimpan ke Firebase
+                        var komentarRef = database.ref('pertuni/perpustakaan/karya/komentar');
+                        komentarRef.push(komentarData).then(function() {
+                            komentarText.value = ""; // Bersihkan kolom komentar
+                            tampilkanKomentar(); // Update tampilan komentar
+                        });
+                    });
+                }
+            }
+        });
+
+        // Menampilkan komentar
+        function tampilkanKomentar() {
+    var komentarRef = database.ref('pertuni/perpustakaan/karya/komentar');
+    komentarRef.once('value').then(function(snapshot) {
+        hasilKomentar.innerHTML = ""; // Bersihkan komentar lama
+        snapshot.forEach(function(childSnapshot) {
+            var data = childSnapshot.val();
+            var divKomentar = document.createElement("div");
+            divKomentar.classList.add("comment");
+
+            // Mengubah newline menjadi <br> dan URL menjadi link
+            var content = `
+                <strong>Waktu Pengiriman:</strong> ${new Date(data.waktu).toLocaleString()}<br>
+                <strong>Nama:</strong> ${data.nama}<br>
+                <strong>Nomor Telepon:</strong> ${data.nomor_telepon}<br>
+    <div class="provinsi ${!data.pertuni_provinsi || data.pertuni_provinsi === "Tidak ada provinsi" ? 'hidden' : ''}">
+        <strong>Provinsi:</strong> ${data.pertuni_provinsi}<br>
+    </div>
+${data.komentar ? `<p>Komentar: ${data.komentar.replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')}</p>` : ''}
+                <span class="delete" onclick="hapusKomentar('${childSnapshot.key}')">Hapus</span>
+            `;
+            divKomentar.innerHTML = content;
+            
+            // Menambahkan komentar di bagian atas
+            hasilKomentar.prepend(divKomentar);
+        });
+    });
+}
+
+// Menghapus komentar dengan konfirmasi
+        function hapusKomentar(key) {
+            var user = auth.currentUser;
+            if (user) {
+                var userEmail = user.email;
+                if (userEmail === 'pertunijambi21@gmail.com' || userEmail === user.email) {
+                    if (confirm("Apakah Anda ingin menghapus data ini?")) {
+                        var komentarRef = database.ref('pertuni/perpustakaan/karya/komentar/' + key);
+                        komentarRef.remove().then(function() {
+                            tampilkanKomentar(); // Update tampilan komentar
+                        });
+                    }
+                } else {
+                    alert("Anda tidak memiliki izin untuk menghapus komentar.");
+                }
+            }
+        }
+
+        // Menampilkan komentar saat halaman dimuat
+        window.onload = function() {
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    tampilkanKomentar();
+                } else {
+                    alert("Anda belum login. Silakan login untuk melihat dan mengirim komentar.");
+                }
+            });
+        };
+    </script>
+<button class="back-button" onclick="window.location.href='karya komentar.html'">Kembali</button>
+
+</body>
+</html>

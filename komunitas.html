@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Menu</title>
+    <style>
+      body {
+        background-image: url('../lautan.gif');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        color: #90ee90; /* Hijau muda */
+      }
+
+      .menu-container {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .menu-item {
+        display: inline-block;
+        margin: 10px;
+        padding: 10px;
+        background-color: white;
+        border-radius: 5px;
+      }
+
+      a {
+        color: #90ee90; /* Hijau muda */
+        font-size: 1.2em;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: #76c776; /* Warna hijau muda saat hover */
+      }
+
+      .back-button {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .back-button:hover {
+        background-color: #3e8e41;
+      }
+
+      /* Responsivitas */
+      @media (max-width: 768px) {
+        body {
+          background-size: auto;
+        }
+
+        .menu-container {
+          padding: 10px;
+        }
+
+        a {
+          font-size: 1em;
+        }
+
+        .back-button {
+          width: 100%;
+          padding: 15px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        a {
+          font-size: 0.9em;
+        }
+
+        .back-button {
+          width: 100%;
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-container">
+      <a href="https://chat.whatsapp.com/HuGqGnbfacCKwa7IA3YNbI" target="_blank"</a>Grup DPD Pertuni Jambi</a>
+      <br>            
+      <a href="https://wa.me/6282185718020?text=Assalamu’alaikum,%20Ibu%20Ketua%20beserta%20Jajaran%20Pengurus%20DPD%20Pertuni%20Jambi..">Hubungi Kami</a>
+      <br>
+    </div>
+    <button class="back-button" onclick="window.location.href='sosialmedia.html'">Kembali</button>
+  </body>
+</html>

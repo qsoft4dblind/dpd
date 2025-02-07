@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Menu</title>
+    <style>
+      body {
+        background-image: url('../asset/roket.gif');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
+      .menu-container {
+        position: relative;
+        z-index: 1;
+      }
+      .menu-item {
+        display: inline-block;
+        margin: 10px;
+        padding: 10px;
+        background-color: white;
+        border-radius: 5px;
+      }
+      .back-button {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .back-button:hover {
+        background-color: #3e8e41;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-container">
+      <a href="daftar pengguna.html">Daftar pengguna Pertuni Jambi</a>
+<br>
+<a href="daftar pengguna awas.html">Daftar pengguna Awas</a>
+<br>
+<a href="daftar pengguna dpd.html">Daftar pengguna DPD Lain</a>
+      <br>                                      
+    </div>
+    <button class="back-button" onclick="window.location.href='admin aja.html'">Kembali</button>
+  </body>
+</html>

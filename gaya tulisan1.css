@@ -1,0 +1,87 @@
+/* Global styling */
+body {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px; /* Set ukuran teks menjadi 14 */
+  line-height: 1.6;
+  background-color: white; /* Ubah latar belakang menjadi putih */
+  padding: 20px;
+  margin: 0; /* Reset margin to ensure full width */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+  overflow-x: auto; /* Enable horizontal scrolling */
+}
+
+/* Styling for h1-h6 */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold; /* Membuat teks h1-h6 menjadi tebal (bold) */
+  color: black; /* Warna teks hitam */
+}
+
+h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover {
+  color: lightblue; /* Warna teks biru muda saat hover */
+}
+
+/* Styling for the menu items */
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: row; /* Ubah flex-direction menjadi row */
+}
+
+nav li {
+  /* float: left; */
+  /* Menghapus float: left; */
+}
+
+nav button {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Styling for the active menu item */
+.active {
+  background-color: blue;
+}
+
+/* Container styling */
+.container {
+  max-width: 800px;
+  width: 100%; /* Menyesuaikan lebar container dengan layar */
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto; /* Allow vertical scroll */
+  flex: 1; /* Grow container to fill remaining space */
+}
+
+/* Responsive image */
+.img-center {
+  max-width: 100%; /* Membuat gambar responsif */
+  height: auto;
+  margin-bottom: 20px; /* Add some space below the image */
+}
+
+/* Gaya dasar untuk semua teks */
+body, h1, h2, h3, h4, h5, h6, p, button {
+  color: black; /* Warna teks hitam secara default */
+}
+
+/* Efek hover untuk semua teks */
+*:hover {
+  color: lightblue; /* Warna teks biru muda saat hover */
+}
